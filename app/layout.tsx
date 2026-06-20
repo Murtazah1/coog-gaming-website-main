@@ -1,6 +1,6 @@
 import Navbar from "@/components/site-components/navbar";
 import Footer from "@/components/site-components/footer";
-
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -13,6 +13,7 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Footer />
+        <Toaster richColors closeButton />
       </body>
     </html>
   );
