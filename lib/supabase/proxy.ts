@@ -3,6 +3,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { hasEnvVars } from "../utils";
 
 export async function updateSession(request: NextRequest) {
+  // Skip auth check during development
+  if (process.env.SKIP_AUTH === "true") {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -12,6 +17,7 @@ export async function updateSession(request: NextRequest) {
   if (!hasEnvVars) {
     return supabaseResponse;
   }
+  
 
   // With Fluid compute, don't put this client in a global environment
   // variable. Always create a new one on each request.

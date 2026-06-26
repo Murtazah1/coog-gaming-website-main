@@ -8,6 +8,13 @@
       "when": 1781832408960,
       "tag": "0000_spotty_daredevil",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782002236292,
+      "tag": "0001_easy_archangel",
+      "breakpoints": true
     }
   ]
 }

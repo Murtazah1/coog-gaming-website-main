@@ -8,20 +8,23 @@ const links = [
 
 export default function Navbar() {
   return (
-    <nav className="border-b bg-background sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-6">
-        <Link href="/" className="font-bold text-lg">
+    <nav className="sticky top-0 z-50 bg-black">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+        <Link href="/" className="text-lg font-bold text-white">
           Coog Gaming
         </Link>
-        {links.map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {label}
-          </Link>
-        ))}
+
+        <div className="flex items-center gap-6">
+          {links.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="rounded-md px-4 py-2 text-sm text-gray-300 transition-colors hover:bg-gray-800 hover:text-white"
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
       </div>
     </nav>
   );

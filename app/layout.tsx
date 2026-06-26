@@ -1,3 +1,5 @@
+import "./globals.css";
+
 import Navbar from "@/components/site-components/navbar";
 import Footer from "@/components/site-components/footer";
 import { Toaster } from "sonner";
@@ -9,9 +11,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className="flex min-h-screen flex-col">
         <Navbar />
-        {children}
+        <main className="flex-1">{children}</main>
         <Footer />
         <Toaster richColors closeButton />
       </body>
