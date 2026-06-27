@@ -22,6 +22,7 @@ export default async function UsersTable() {
       <TableCaption>A table of Users</TableCaption>
       <TableHeader>
         <TableRow>
+          <TableHead>Avatar</TableHead>
           <TableHead className="w-[100px]">Email</TableHead>
           <TableHead>First Name</TableHead>
           <TableHead>Last Name</TableHead>
@@ -32,11 +33,12 @@ export default async function UsersTable() {
       <TableBody>
         {(users ?? []).map((user) => (
           <TableRow key={user.id}>
+            <TableCell></TableCell>
             <TableCell className="font-medium">{user.email}</TableCell>
             <TableCell>{user.firstName}</TableCell>
             <TableCell>{user.lastName}</TableCell>
             <TableCell className="text-right">{user.createdAt?.toLocaleDateString() ?? "-"}</TableCell>
-            <TableCell></TableCell>
+            <TableCell> </TableCell>
           </TableRow>
         ))}
       </TableBody>
