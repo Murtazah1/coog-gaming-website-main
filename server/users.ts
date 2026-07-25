@@ -61,7 +61,7 @@ export async function createUser(data: {
   password: string;
   firstName?: string | null;
   lastName?: string | null;
-  avatarURL: string | null;
+  avatarUrl: string | null;
 }) {
   return safeAction(async () => {
     // connect to the admin client as we are making a user
@@ -85,7 +85,7 @@ export async function createUser(data: {
       .set({
         firstName: data.firstName,
         lastName: data.lastName,
-        avatarUrl: data.avatarURL,
+        avatarUrl: data.avatarUrl,
       })
       .where(eq(users.id, authData.user.id))
       .returning(); // returning is nice as it just returns the rows that were changed as an array, which in this case is an array of 1 element
@@ -96,6 +96,7 @@ export async function createUser(data: {
 // function for updating user
 export async function updateUser(
   id: string,
+  // Partial tells us that all the fields in user is optional, so we do not need to upload everything in order to run this update function
   data: Partial<Omit<UpdateUserData, "id" | "createdAt">>, // id and creation omited because we do not need to update those
 ) {
   return safeAction(async () => {

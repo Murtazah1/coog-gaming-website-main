@@ -13,3 +13,5 @@ export const members = pgTable("members", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   discordName: text("discord_name"),
 });
+
+export type Members = typeof members.$inferSelect;
