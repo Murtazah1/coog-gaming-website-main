@@ -14,4 +14,4 @@ export const members = pgTable("members", {
   discordName: text("discord_name"),
 });
 
-export type Members = typeof members.$inferSelect;
+export type Member = typeof members.$inferSelect;

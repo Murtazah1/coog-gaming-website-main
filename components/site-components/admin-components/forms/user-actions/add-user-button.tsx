@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, User } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {

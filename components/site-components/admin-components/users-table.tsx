@@ -37,7 +37,7 @@ export default async function UsersTable({ search } : { search?: string}) {
         <TableHeader>
           <TableRow>
             <TableHead>Avatar</TableHead>
-            <TableHead className="w-[100px]">Email</TableHead>
+            <TableHead className="w-[200px]">Email</TableHead>
             <TableHead>First Name</TableHead>
             <TableHead>Last Name</TableHead>
             <TableHead className="text-right">Created At</TableHead>

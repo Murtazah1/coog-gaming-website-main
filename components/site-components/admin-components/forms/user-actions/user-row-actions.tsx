@@ -26,20 +26,27 @@ interface UserRowActionsProps {
 function UserRowActions({ user }: UserRowActionsProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
+  // adding in a deleteing state so there cannot be multple delete requests sent
+  const [deleting, setDeleting] = useState(false);
 
   async function handleDelete() {
     if (!confirm(`Delete user ${user.email}?`)) return;
     // deleteUser returns either nothing or an error because we use drizzle code to delete whatever user we need to delete in the db
     // so if there is an error we can handle it else we continue on as normal
-    const { error } = await deleteUser(user.id);
-    if (error) {
-      toast.error(error);
-      return;
+    setDeleting(true);
+    try {
+      const { error } = await deleteUser(user.id);
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      toast.success("User Deleted");
+      router.refresh();
+    } finally {
+      setDeleting(false);
     }
-    toast.success("User Deleted");
-    router.refresh();
   }
-// if we successfully update a user then we need to refresh the page in order to solidify the changes
+  // if we successfully update a user then we need to refresh the page in order to solidify the changes
   function handleEditSuccess() {
     setDialogOpen(false);
     router.refresh();
@@ -52,6 +59,7 @@ function UserRowActions({ user }: UserRowActionsProps) {
           variant="ghost"
           size="icon"
           onClick={() => setDialogOpen(true)}
+          disabled={deleting}
           aria-label={`Edit ${user.email}`}
         >
           <Pen className="h-4 w-4" />
@@ -60,6 +68,7 @@ function UserRowActions({ user }: UserRowActionsProps) {
           variant="ghost"
           size="icon"
           onClick={handleDelete}
+          disabled={deleting}
           aria-label={`Delete ${user.email}`}
         >
           <Trash2 className="h-4 w-4" />
@@ -71,7 +80,8 @@ function UserRowActions({ user }: UserRowActionsProps) {
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
             <DialogDescription>
-              Update details for {user.firstName} {user.lastName}
+              Update details for{" "}
+              {[user.firstName, user.lastName].filter(Boolean).join(" ") || user.email}
             </DialogDescription>
           </DialogHeader>
           <UserForm

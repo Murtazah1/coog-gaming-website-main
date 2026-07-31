@@ -3,67 +3,134 @@
 // this file houses all the routes/ database actions for users table
 import { db } from "@/db/index";
 import { users, type User } from "@/db/schema/users";
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { eq, ilike } from "drizzle-orm";
+import safeAction from "./safe-action";
+import * as z from "zod";
+import { PassThrough } from "stream";
 
 // just a type for making user updating easier
 type UpdateUserData = Partial<
   Pick<User, "email" | "firstName" | "lastName" | "avatarUrl">
 >;
 
-// a function that acts as a try catch handler for all the functions in this file
-async function safeAction<T>(
-  // takes in the database query code
-  action: () => Promise<T>,
-): Promise<{ data: T | null; error: string | null }> {
-  try {
-    // runs it and if no error it will return data: data, error: null and if the opposite it will throw an error
-    const data = await action();
-    return { data, error: null };
-  } catch (err) {
-    return {
-      data: null,
-      error:
-        err instanceof Error ? err.message : "Error fetching user information",
-    };
-  }
-}
+// since users can technically call a server actions without using the user form I made we need to add zod validation in this file too
+const createUserSchema = z.object({
+  email: z.email("Enter in a valid email address").trim(),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  firstName: z
+    .string()
+    .trim()
+    .min(1, "Give a first name")
+    .nullable()
+    .optional(),
+  lastName: z.string().trim().min(1, "Give a last name").nullable().optional(),
+  avatarUrl: z.url("Avatar URL must be valid").nullable(),
+});
+
+const updateUserSchema = z
+  .object({
+    email: z.email("Enter in a valid email address").trim().optional(),
+    firstName: z
+      .string()
+      .trim()
+      .min(1, "Give a first name")
+      .nullable()
+      .optional(),
+    lastName: z
+      .string()
+      .trim()
+      .min(1, "Give a last name")
+      .nullable()
+      .optional(),
+    avatarUrl: z.url("Avatar URL must be valid").nullable().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "at least one field must be provided",
+  });
+
+// and lets make a type for user creation + updating
+
+type CreateUserInput = {
+  email: string;
+  password: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  avatarUrl: string | null;
+};
+
+// need to make a seperate z object for passwords as I want password updating to be done through its own special form
+const updatePasswordSchema = z
+  .object({
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(8, "Confirm the new password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+const changePasswordSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(1, "Confirm your new password")
+}).refine((data) => data.password === data.confirmPassword,
+ {
+  message: "Passwords do not match",
+  path: ["confirmPassword"]
+ })
+
+
 
 // get users by email, this one is for the search implementation that we will do later
 export async function getUsers(search?: string) {
+  const cleanSearch = search?.trim();
+
   return safeAction(() =>
     db.query.users.findMany({
-      where: search ? ilike(users.email, `%${search}%`) : undefined,
+      where: cleanSearch ? ilike(users.email, `%${cleanSearch}%`) : undefined,
+
+      orderBy: (table, { desc }) => [desc(table.createdAt)],
     }),
   );
 }
 
 // getting the user by ID, useful function to have
 export async function getUserById(id: string) {
-  return safeAction(() =>
-    db.query.users
-      .findFirst({ where: eq(users.id, id) })
-      .then((res) => res ?? null),
-  );
+  return safeAction(async () => {
+    const user = await db.query.users.findFirst({ where: eq(users.id, id) });
+    return user ?? null;
+  });
 }
 
 // finding a user by email
 export async function getUserByEmail(email: string) {
-  return safeAction(() =>
-    db.query.users
-      .findFirst({ where: eq(users.email, email) })
-      .then((res) => res ?? null),
-  );
+  // we lower case the email as emails are case insensitive
+  return safeAction(async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, cleanEmail),
+    });
+
+    return user ?? null;
+  });
 }
 // this is a function for creating users, takes in an object that defines user fields
-export async function createUser(data: {
-  email: string;
-  password: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  avatarUrl: string | null;
-}) {
+export async function createUser(data: CreateUserInput) {
   return safeAction(async () => {
+    // make sure to validate the user info beforehand
+    const validation = createUserSchema.safeParse(data);
+
+    // and if our validation fails we need to throw an error that our save action can handle
+    if (!validation.success) {
+      throw new Error(
+        validation.error.issues[0]?.message ?? "Invalid User Info",
+      );
+    }
+
+    const validatedData = validation.data;
+    const email = validatedData.email.toLowerCase();
+
     // connect to the admin client as we are making a user
     const supabaseAuth = createAdminClient();
     const { data: authData, error: authError } =
@@ -71,66 +138,185 @@ export async function createUser(data: {
       // is that u enter in those fields first, it gets sent to a special auth table
       // and from the auth table it gets added to the users table, as no passwords are stored in the user table
       await supabaseAuth.auth.admin.createUser({
-        email: data.email,
-        password: data.password,
+        email: email,
+        password: validatedData.password,
         email_confirm: true,
       });
 
     if (authError || !authData.user) {
       throw new Error(authError?.message || "Failed to create auth user");
     }
-    // after we insert the users we now need to update it with the name and avatar
-    const [updatedUser] = await db
-      .update(users)
-      .set({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        avatarUrl: data.avatarUrl,
-      })
-      .where(eq(users.id, authData.user.id))
-      .returning(); // returning is nice as it just returns the rows that were changed as an array, which in this case is an array of 1 element
 
-    return updatedUser ?? null;
+    try {
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          firstName: validatedData.firstName,
+          lastName: validatedData.lastName,
+          avatarUrl: validatedData.avatarUrl,
+        })
+        .where(eq(users.id, authData.user.id))
+        .returning(); // returning is nice as it just returns the rows that were changed as an array, which in this case is an array of 1 element
+
+      if (!updatedUser) {
+        throw new Error(
+          "Auth account was created, but was not made into public user",
+        );
+      }
+
+      return updatedUser ?? null;
+    } catch (error) {
+      // for this part of the code we cleanup partially created user if the error is thrown
+      // and this cleanup involves us deleting the user from the auth table
+      const { error: cleanupError } = await supabaseAuth.auth.admin.deleteUser(
+        authData.user.id,
+      );
+
+      if (cleanupError) {
+        console.error(
+          "Failed to cleanup the partially created user: ",
+          cleanupError.message,
+        );
+      }
+
+      throw error;
+    }
+    // after we insert the users we now need to update it with the name and avatar
   });
 }
+
 // function for updating user
-export async function updateUser(
-  id: string,
-  // Partial tells us that all the fields in user is optional, so we do not need to upload everything in order to run this update function
-  data: Partial<Omit<UpdateUserData, "id" | "createdAt">>, // id and creation omited because we do not need to update those
-) {
+export async function updateUser(id: string, data: UpdateUserData) {
   return safeAction(async () => {
+    // added in zod validation for this
+    const validRes = updateUserSchema.safeParse(data);
+    if (!validRes.success) {
+      throw new Error(
+        validRes.error.issues[0]?.message ??
+          "Invalid Information for user update",
+      );
+    }
+
+    const validData = validRes.data;
+
+    // validate if the user exists
+
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.id, id),
+    });
+
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+    const email = validData.email?.toLowerCase();
+
+    const emailChanged = email !== undefined && email !== existingUser.email;
+
+    const supabaseAuth = emailChanged ? createAdminClient() : null;
     // If the email is being changed, update it in Supabase Auth as well.
-    if (data.email) {
-      const supabaseAuth = createAdminClient();
+    if (emailChanged && supabaseAuth) {
       const { error } = await supabaseAuth.auth.admin.updateUserById(id, {
-        email: data.email,
+        email: email,
       });
       if (error) {
         console.warn("Failed to get user from db: ", error.message);
       }
     }
-    // then we update the user with the data that we entered in 
-    const [updatedUser] = await db
-      .update(users)
-      .set(data)
-      .where(eq(users.id, id))
-      .returning();
-    return updatedUser ?? null;
+
+    // now we build an object containing only the fields provided in data
+    const databaseUpdateData: UpdateUserData = {};
+
+    if (email !== undefined) {
+      databaseUpdateData.email = email;
+    }
+
+    if (validData.firstName !== undefined) {
+      databaseUpdateData.firstName = validData.firstName;
+    }
+
+    if (validData.lastName !== undefined) {
+      databaseUpdateData.lastName = validData.lastName;
+    }
+
+    if (validData.avatarUrl !== undefined) {
+      databaseUpdateData.avatarUrl = validData.avatarUrl;
+    }
+
+    try {
+      const [updatedUser] = await db
+        .update(users)
+        .set(databaseUpdateData)
+        .where(eq(users.id, id))
+        .returning();
+
+      if (!updateUser) {
+        throw new Error("User not found");
+      }
+
+      return updatedUser;
+    } catch (error) {
+      // if the update failed we need to roll back the email change as that was updated in the auth table
+
+      if (supabaseAuth && emailChanged) {
+        const { error: rollbackError } =
+          await supabaseAuth.auth.admin.updateUserById(id, {
+            email: existingUser.email,
+          });
+
+        if (rollbackError) {
+          console.error(
+            "failed to restore previos email lmao: ",
+            rollbackError.message,
+          );
+        }
+      }
+    }
   });
 }
 
 // function to delete the user
-export async function deleteUser(id: string){
+export async function deleteUser(id: string) {
   return safeAction(async () => {
-    const supabaseAuth = createAdminClient()
+    const supabaseAuth = createAdminClient();
     // Delete the user's authentication account.
-    const { error: authError } = await supabaseAuth.auth.admin.deleteUser(id)
+    const { error: authError } = await supabaseAuth.auth.admin.deleteUser(id);
     // delete the user from the db
-    await db.delete(users).where(eq(users.id, id))
-    if (authError){
-      throw new Error(authError.message)
+    await db.delete(users).where(eq(users.id, id));
+    if (authError) {
+      throw new Error(authError.message);
     }
-    return null
-  })
+    return { id };
+  });
 }
+
+// update the user password, only the user is able to run this function
+
+export async function updateUserPassword( data: {
+  password: string;
+  confirmPassword: string
+} 
+) 
+{
+    const result = changePasswordSchema.safeParse(data)
+
+    if (!result.success){ 
+      return {
+        error: result.error.issues[0]?.message ?? "Invalid Password Information"
+      }
+    }
+
+    const supabase = await createClient()
+
+    const { error } = await supabase.auth.updateUser({
+      password: result.data.password
+    })
+    
+    if (error) {
+      return {error: error.message}
+    }
+
+    return {
+      error: null
+    }
+}
+
