@@ -9,14 +9,37 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
-import { getUsers } from "@/server/users";
-import UserRowActions from "./forms/user-actions/user-row-actions";
+import { getMembers, getNonMembers } from "@/server/members";
+import AddMemberButton from "./forms/members-actions/add-member-button";
 import SearchInput from "./search-input";
-import AddUserButton from "./forms/user-actions/add-user-button";
+import MemberRowActions from "./forms/members-actions/member-row-actions";
 
+interface MembersTableProps {
+  search?: string;
+}
 
-export default async function UsersTable({ search } : { search?: string}) {
-  const { data: users, error } = await getUsers(search);
+function formatDate(date: string | null) {
+  if (!date) {
+    return "-";
+  }
+  const [year, month, day] = date.split("-").map(Number);
+
+  return new Date(year, month - 1, day).toLocaleDateString();
+}
+
+export default async function MembersTable({ search }: MembersTableProps) {
+  // use Promise.all here as it runs these concurrently
+  const [membersResult, nonMembers] = await Promise.all([
+    getMembers(search),
+    getNonMembers()]
+  );
+  
+  const members = membersResult.data ?? []
+  
+  const error = membersResult.error
+
+  const nonMember = nonMembers.data ?? []
+
 
   if (error) {
     return <p className="text-red-500">Error: {error}</p>;
@@ -25,28 +48,31 @@ export default async function UsersTable({ search } : { search?: string}) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Users</h2>
-        <AddUserButton />
+        <h2 className="text-xl font-semibold">Members</h2>
+        <AddMemberButton NonMembers={nonMember}/>
       </div>
-      {/* important thing to note how the search works, SearchInput changes the url based on the user's search, a function such as getUsers takes in what the user entered (that is stored in the url) then gives backs the results*/}
-      <SearchInput placeholder="Search by name or email" />
 
+      
+
+      <SearchInput placeholder="Search by name, email, or discord name" />
 
       <Table>
-        <TableCaption>A table of Users</TableCaption>
+        <TableCaption>A table of members</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Avatar</TableHead>
             <TableHead className="w-[200px]">Email</TableHead>
             <TableHead>First Name</TableHead>
             <TableHead>Last Name</TableHead>
-            <TableHead className="text-right">Created At</TableHead>
+            <TableHead>Discord Name</TableHead>
+            <TableHead>Plan Type</TableHead>
+            <TableHead>Plan End Date</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {(users ?? []).map((user) => (
-            <TableRow key={user.id}>
+          {(members ?? []).map(({ member, user }) => (
+            <TableRow key={member.id}>
               <TableCell>
                 <Avatar className="h-10 w-10">
                   <AvatarImage
@@ -69,13 +95,12 @@ export default async function UsersTable({ search } : { search?: string}) {
               <TableCell className="font-medium">{user.email}</TableCell>
               <TableCell>{user.firstName}</TableCell>
               <TableCell>{user.lastName}</TableCell>
-              <TableCell className="text-right">
-                {user.createdAt?.toLocaleDateString() ?? "-"}
-              </TableCell>
-              <TableCell>
-                {/* Pass in our user as a prop to the user row actions, which then gets passed into user-form  */}
-                <UserRowActions user={user} />
-              </TableCell>
+              <TableCell>{member.discordName}</TableCell>
+              <TableCell>{member.planType}</TableCell>
+              <TableCell>{formatDate(member.currentPeriodEnd)}</TableCell>
+              <TableCell><MemberRowActions
+              member={member}
+              user={user} /></TableCell>
             </TableRow>
           ))}
         </TableBody>

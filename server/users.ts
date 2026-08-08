@@ -5,10 +5,9 @@ import { db } from "@/db/index";
 import { users, type User } from "@/db/schema/users";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { eq, ilike } from "drizzle-orm";
+import { eq, ilike, or } from "drizzle-orm";
 import safeAction from "./safe-action";
 import * as z from "zod";
-import { PassThrough } from "stream";
 
 // just a type for making user updating easier
 type UpdateUserData = Partial<
@@ -16,6 +15,9 @@ type UpdateUserData = Partial<
 >;
 
 // since users can technically call a server actions without using the user form I made we need to add zod validation in this file too
+
+const userIdSchema = z.uuid("Invalid member ID");
+
 const createUserSchema = z.object({
   email: z.email("Enter in a valid email address").trim(),
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -71,16 +73,15 @@ const updatePasswordSchema = z
     path: ["confirmPassword"],
   });
 
-const changePasswordSchema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string().min(1, "Confirm your new password")
-}).refine((data) => data.password === data.confirmPassword,
- {
-  message: "Passwords do not match",
-  path: ["confirmPassword"]
- })
-
-
+const changePasswordSchema = z
+  .object({
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(1, "Confirm your new password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 // get users by email, this one is for the search implementation that we will do later
 export async function getUsers(search?: string) {
@@ -88,7 +89,13 @@ export async function getUsers(search?: string) {
 
   return safeAction(() =>
     db.query.users.findMany({
-      where: cleanSearch ? ilike(users.email, `%${cleanSearch}%`) : undefined,
+      where: cleanSearch
+        ? or(
+            ilike(users.email, `%${cleanSearch}%`),
+            ilike(users.firstName, `%${cleanSearch}%`),
+            ilike(users.lastName, `%${cleanSearch}%`),
+          )
+        : undefined,
 
       orderBy: (table, { desc }) => [desc(table.createdAt)],
     }),
@@ -98,7 +105,8 @@ export async function getUsers(search?: string) {
 // getting the user by ID, useful function to have
 export async function getUserById(id: string) {
   return safeAction(async () => {
-    const user = await db.query.users.findFirst({ where: eq(users.id, id) });
+    const userId = userIdSchema.parse(id)
+    const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
     return user ?? null;
   });
 }
@@ -291,32 +299,29 @@ export async function deleteUser(id: string) {
 
 // update the user password, only the user is able to run this function
 
-export async function updateUserPassword( data: {
+export async function updateUserPassword(data: {
   password: string;
-  confirmPassword: string
-} 
-) 
-{
-    const result = changePasswordSchema.safeParse(data)
+  confirmPassword: string;
+}) {
+  const result = changePasswordSchema.safeParse(data);
 
-    if (!result.success){ 
-      return {
-        error: result.error.issues[0]?.message ?? "Invalid Password Information"
-      }
-    }
-
-    const supabase = await createClient()
-
-    const { error } = await supabase.auth.updateUser({
-      password: result.data.password
-    })
-    
-    if (error) {
-      return {error: error.message}
-    }
-
+  if (!result.success) {
     return {
-      error: null
-    }
-}
+      error: result.error.issues[0]?.message ?? "Invalid Password Information",
+    };
+  }
 
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.updateUser({
+    password: result.data.password,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return {
+    error: null,
+  };
+}

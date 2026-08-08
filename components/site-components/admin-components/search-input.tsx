@@ -2,55 +2,63 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-
+import { useDebounce } from "use-debounce";
 import { Input } from "@/components/ui/input";
 
-export default function SearchInput() {
-    // import router to change the url
-  const router = useRouter();
-  // import useSearchParams to read query paramets in the url, whatever comes after the ?
-  const searchParams = useSearchParams();
-  // pathname just gets the current pathname (such as /admin)
-  const pathname = usePathname();
-  // in here whatever search is equal to we get in this example /admin?search=alice we get alice
-  const [value, setValue] = useState(searchParams.get("search") ?? "");
-    // this changes whenever value (for search) changes or when the url changes
-    // remember value is the value that the user enters in for their search
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-        // create a copy of the searchParams url for editing
-      const params = new URLSearchParams(searchParams.toString());
-    // trim allows us to get the users search in a clean format
-      const newsearch = value.trim();
-      // this gets the current search value
-      const currentsearch = params.get("search") ?? "";
-        // if they are the same then we do not need to run this function again
-      if (newsearch === currentsearch) {
-        return;
-      }
-      // if we have a newsearch then we set the params as the new search value
-      if (newsearch) {
-        params.set("search", value.trim());
-        // and if the user enters in nothing then no search word appears in the url
-      } else {
-        params.delete("search");
-      }
-      // this converts the paramters the user entered into the proper url search paramter
-      const queryString = params.toString();
-      // if we have parameters then we have the pathname (something like /admin or /admin/users)+ ? + querystring (this will be something like search=alice)
-      // and if there is nothing then just keep the pathname
-      router.replace(queryString ? `${pathname}?${queryString}` : pathname);
-    }, 300); // run this function after a 300 milsec timeout
-    return () => clearTimeout(timeout); // this cleans up the old timer if the user enters in another character while the timer is still going
-  }, [value, pathname, router, searchParams]); // this is called the dependency array, because these values decide if we run our useEffect function
 
+// interface to make sure the props get the correct values
+interface SearchInputProps {
+  placeholder?: string;
+}
+// i have recently learned that all props are objects
+// by doing this {} in the props we can pull the fields we want and then check it
+// against our interface
+export default function SearchInput({
+  placeholder = "Search ...",
+}: SearchInputProps) {
+  // here we just get the router + our search input + our current pathname as we will be reusing this component a lot
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const urlSearch = searchParams.get("search") ?? "";
+  const [value, setValue] = useState("");
+
+  // this makes it so that the state always has the correct url to it, keeping it consistent when say the URL is manually changed due to the user entering in a new value in the search or going back a page
+  useEffect(() => {
+    setValue(urlSearch);
+  }, [urlSearch]);
+
+  // now we can use the debounced hook so we do not need to maintain an internal timer, whenever this value changes we change our useEffect
+  const [debouncedSearchValue] = useDebounce(value, 300);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    const cleanSearch = debouncedSearchValue.trim();
+    const currentSearch = params.get("search") ?? "";
+    if (cleanSearch === currentSearch) {
+      return;
+    }
+
+    if (cleanSearch) {
+      params.set("search", cleanSearch);
+    } else {
+      params.delete("search");
+    }
+
+    router.replace(params ? `${pathname}?${params}` : pathname, {
+      scroll: false,
+    });
+  }, [debouncedSearchValue, pathname, searchParams, router]);
   return (
     // this nextjs input tag has our value (value) and on change we run setValue
     // which will then trigger our useEffect function
     <Input
+      type="search"
       value={value}
       onChange={(e) => setValue(e.target.value)}
-      placeholder="Search by email"
+      placeholder={placeholder}
+      aria-label={placeholder}
       className="max-w-xs"
     />
   );

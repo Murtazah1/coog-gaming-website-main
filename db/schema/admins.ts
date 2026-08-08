@@ -5,6 +5,5 @@ import { users } from "./users";
 export const admins = pgTable("admins", {
   id: uuid("id").primaryKey().defaultRandom(),
   memberId: uuid("member_id").notNull().references(() => members.id),
-  userId: uuid("user_id").notNull().references(() => users.id),
   role: smallint("role").notNull().unique(),
 });
