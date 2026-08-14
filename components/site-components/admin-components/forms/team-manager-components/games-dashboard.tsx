@@ -1,7 +1,7 @@
 import React from "react";
 
 
-import GameCollapsible from "./forms/team-actions/game-collapsible";
+import GameCollapsible from "./game-collapsible/game-collapsible";
 import type { Member } from "@/db/schema";
 
 export type DashboardMember = {

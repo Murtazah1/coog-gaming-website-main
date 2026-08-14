@@ -19,7 +19,7 @@ import { addTeamMember } from "@/server/team-members";
 import type {
   DashboardMember,
   DashboardTeam,
-} from "../../games-dashboard";
+} from "../games-dashboard";
 
 type AddTeamMemberProps = {
   team: DashboardTeam;

@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { createGame, updateGame } from "@/server/games";
 import { uploadGameImage } from "@/server/storage";
 
-import type { DashboardGame } from "../../games-dashboard";
+import type { DashboardGame } from "../games-dashboard";
 
 // ==========================================
 // FORM SCHEMA

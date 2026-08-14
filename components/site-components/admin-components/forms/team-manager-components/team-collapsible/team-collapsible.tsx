@@ -7,8 +7,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { DashboardTeam } from "../../games-dashboard";
-import type { DashboardMember } from "../../games-dashboard";
+import type { DashboardTeam } from "../games-dashboard";
+import type { DashboardMember } from "../games-dashboard";
 import TeamActions from "./team-actions";
 import TeamMembersCollapsible from "./team-members-collapsible";
 

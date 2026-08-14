@@ -13,8 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { removeTeamMember } from "@/server/team-members";
-
-import type { DashboardMember } from "../../games-dashboard";
+import type { DashboardMember } from "../games-dashboard";
 
 type TeamMembersProps = {
   teamId: string;

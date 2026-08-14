@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import GameActions from "./game-actions";
-import TeamCollapsible from "./team-collapsible";
-import type { DashboardGame } from "../../games-dashboard";
-import type { DashboardMember } from "../../games-dashboard";
+import TeamCollapsible from "../team-collapsible/team-collapsible";
+import type { DashboardGame } from "../games-dashboard";
+import type { DashboardMember } from "../games-dashboard";
 
 
 type GameCollapsibleProps = {

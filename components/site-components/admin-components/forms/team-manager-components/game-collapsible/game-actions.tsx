@@ -16,9 +16,9 @@ import {
 } from "@/components/ui/dialog";
 import { deleteGame } from "@/server/games";
 import GameForm from "./game-form";
-import TeamForm from "../team-actions/team-form";
-import type { DashboardGame } from "../../games-dashboard";
-import type { DashboardMember } from "../../games-dashboard";
+import TeamForm from "../team-collapsible/team-form";
+import type { DashboardGame } from "../games-dashboard";
+
 
 type GameActionsProps = {
   game: DashboardGame;

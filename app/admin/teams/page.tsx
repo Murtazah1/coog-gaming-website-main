@@ -1,8 +1,8 @@
 import { getGamesWithTeamsAndMembers } from "@/server/games";
-import GamesDashboard from "@/components/site-components/admin-components/games-dashboard";
-import AddGameButton from "@/components/site-components/admin-components/forms/team-actions/add-game-button";
+import GamesDashboard from "@/components/site-components/admin-components/forms/team-manager-components/games-dashboard";
+import AddGameButton from "@/components/site-components/admin-components/forms/team-manager-components/game-collapsible/add-game-button";
 import { getMembers } from "@/server/members";
-import type { DashboardMember } from "@/components/site-components/admin-components/games-dashboard";
+import type { DashboardMember } from "@/components/site-components/admin-components/forms/team-manager-components/games-dashboard";
 
 export default async function Page() {
   const [gamesResult, membersResult] = await Promise.all([

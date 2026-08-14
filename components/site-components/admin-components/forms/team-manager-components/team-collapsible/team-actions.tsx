@@ -22,7 +22,7 @@ import AddTeamMember from "./add-team-member";
 import type {
   DashboardMember,
   DashboardTeam,
-} from "../../games-dashboard";
+} from "../games-dashboard";
 
 interface TeamActionsProps {
   team: DashboardTeam;
