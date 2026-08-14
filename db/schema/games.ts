@@ -5,3 +5,4 @@ export const games = pgTable("games", {
   name: text("name").notNull(),
   imageUrl: text("image_url"),
 });
+export type Game = typeof games.$inferSelect;

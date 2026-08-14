@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
+import { relations } from "./schema/relations"
 
 const globalForDb = globalThis as unknown as {
   conn: postgres.Sql | undefined;
@@ -16,6 +17,6 @@ if (process.env.NODE_ENV !== "production") {
   globalForDb.conn = conn;
 }
 
-export const db = drizzle(conn, { schema });
+export const db = drizzle({client: conn, relations});
 export { schema };
 export type DbClient = typeof db;

@@ -61,10 +61,10 @@ export default async function MembersTable({ search }: MembersTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Avatar</TableHead>
-            <TableHead className="w-[200px]">Email</TableHead>
+            
             <TableHead>First Name</TableHead>
             <TableHead>Last Name</TableHead>
-            <TableHead>Discord Name</TableHead>
+            <TableHead>Gamer Name</TableHead>
             <TableHead>Plan Type</TableHead>
             <TableHead>Plan End Date</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -92,7 +92,7 @@ export default async function MembersTable({ search }: MembersTableProps) {
                   </AvatarFallback>
                 </Avatar>
               </TableCell>
-              <TableCell className="font-medium">{user.email}</TableCell>
+              
               <TableCell>{user.firstName}</TableCell>
               <TableCell>{user.lastName}</TableCell>
               <TableCell>{member.discordName}</TableCell>

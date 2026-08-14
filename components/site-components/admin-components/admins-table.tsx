@@ -90,7 +90,7 @@ export default async function AdminsTable({
             </TableHead>
 
             <TableHead className="w-[200px]">
-              Email
+              Gamer Name
             </TableHead>
 
             <TableHead>
@@ -152,7 +152,7 @@ export default async function AdminsTable({
                 </TableCell>
 
                 <TableCell className="font-medium">
-                  {member.email}
+                  {member.discordName}
                 </TableCell>
 
                 <TableCell>

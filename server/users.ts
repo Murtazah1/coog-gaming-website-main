@@ -5,9 +5,10 @@ import { db } from "@/db/index";
 import { users, type User } from "@/db/schema/users";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { eq, ilike, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import safeAction from "./safe-action";
 import * as z from "zod";
+import { deleteAvatar } from "./storage";
 
 // just a type for making user updating easier
 type UpdateUserData = Partial<
@@ -90,11 +91,25 @@ export async function getUsers(search?: string) {
   return safeAction(() =>
     db.query.users.findMany({
       where: cleanSearch
-        ? or(
-            ilike(users.email, `%${cleanSearch}%`),
-            ilike(users.firstName, `%${cleanSearch}%`),
-            ilike(users.lastName, `%${cleanSearch}%`),
-          )
+        ? {
+            OR: [
+              {
+                email: {
+                  ilike: `%${cleanSearch}%`,
+                },
+              },
+              {
+                firstName: {
+                  ilike: `%${cleanSearch}%`,
+                },
+              },
+              {
+                lastName: {
+                  ilike: `%${cleanSearch}%`,
+                },
+              },
+            ],
+          }
         : undefined,
 
       orderBy: (table, { desc }) => [desc(table.createdAt)],
@@ -105,8 +120,12 @@ export async function getUsers(search?: string) {
 // getting the user by ID, useful function to have
 export async function getUserById(id: string) {
   return safeAction(async () => {
-    const userId = userIdSchema.parse(id)
-    const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+    const userId = userIdSchema.parse(id);
+    const user = await db.query.users.findFirst({
+      where: {
+        id: userId,
+      },
+    });
     return user ?? null;
   });
 }
@@ -117,7 +136,9 @@ export async function getUserByEmail(email: string) {
   return safeAction(async () => {
     const cleanEmail = email.trim().toLowerCase();
     const user = await db.query.users.findFirst({
-      where: eq(users.email, cleanEmail),
+      where: {
+        email: cleanEmail,
+      },
     });
 
     return user ?? null;
@@ -210,7 +231,9 @@ export async function updateUser(id: string, data: UpdateUserData) {
     // validate if the user exists
 
     const existingUser = await db.query.users.findFirst({
-      where: eq(users.id, id),
+      where: {
+        id,
+      },
     });
 
     if (!existingUser) {
@@ -219,6 +242,10 @@ export async function updateUser(id: string, data: UpdateUserData) {
     const email = validData.email?.toLowerCase();
 
     const emailChanged = email !== undefined && email !== existingUser.email;
+
+    const avatarChanged =
+      validData.avatarUrl !== undefined &&
+      validData.avatarUrl !== existingUser.avatarUrl;
 
     const supabaseAuth = emailChanged ? createAdminClient() : null;
     // If the email is being changed, update it in Supabase Auth as well.
@@ -257,8 +284,16 @@ export async function updateUser(id: string, data: UpdateUserData) {
         .where(eq(users.id, id))
         .returning();
 
-      if (!updateUser) {
+      if (!updatedUser) {
         throw new Error("User not found");
+      }
+
+      if (avatarChanged && existingUser.avatarUrl) {
+        const { error } = await deleteAvatar(existingUser.avatarUrl);
+
+        if (error) {
+          console.error("Failed to delete old avatar:", error);
+        }
       }
 
       return updatedUser;
@@ -286,6 +321,15 @@ export async function updateUser(id: string, data: UpdateUserData) {
 export async function deleteUser(id: string) {
   return safeAction(async () => {
     const supabaseAuth = createAdminClient();
+    const user = await db.query.users.findFirst({
+      where: {
+        id,
+      },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     // Delete the user's authentication account.
     const { error: authError } = await supabaseAuth.auth.admin.deleteUser(id);
     // delete the user from the db
@@ -293,6 +337,16 @@ export async function deleteUser(id: string) {
     if (authError) {
       throw new Error(authError.message);
     }
+
+    // if the user had an avatar, remove it from storage
+    if (user.avatarUrl) {
+      const { error: avatarError } = await deleteAvatar(user.avatarUrl);
+
+      if (avatarError) {
+        console.error("Failed to delete user avatar:", avatarError);
+      }
+    }
+
     return { id };
   });
 }

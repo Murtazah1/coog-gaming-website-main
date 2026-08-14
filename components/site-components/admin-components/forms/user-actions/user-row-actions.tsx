@@ -23,7 +23,7 @@ interface UserRowActionsProps {
 }
 
 // we pass in the user from the users-table component
-function UserRowActions({ user }: UserRowActionsProps) {
+export default function UserRowActions({ user }: UserRowActionsProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   // adding in a deleteing state so there cannot be multple delete requests sent
@@ -96,4 +96,4 @@ function UserRowActions({ user }: UserRowActionsProps) {
   );
 }
 
-export default UserRowActions;
+
