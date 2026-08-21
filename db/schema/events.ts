@@ -11,3 +11,5 @@ export const events = pgTable("events", {
   description: text("description"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
+
+export type Event = typeof events.$inferSelect

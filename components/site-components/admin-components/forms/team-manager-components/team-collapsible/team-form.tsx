@@ -173,7 +173,7 @@ export default function TeamForm({
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="Varsity Team"
+                  placeholder="UH Team 1"
                   autoComplete="off"
                   disabled={saving}
                 />

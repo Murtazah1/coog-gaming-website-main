@@ -71,7 +71,7 @@ type UserFormProps = CreateProps | EditProps;
 // changes to the state
 // in the case of the admin user form, this function will tell the UserRowActions to close the dialogue on success and refresh the webpage
 // on cancel it will just close the dialogue form
-function UserForm({ mode, user, onSuccess, onCancel }: UserFormProps) {
+export default function UserForm({ mode, user, onSuccess, onCancel }: UserFormProps) {
   // a bool used to determine if we are creating a user or updating a user
   const isCreate = mode === "create";
   // used to handle file input
@@ -329,4 +329,4 @@ function UserForm({ mode, user, onSuccess, onCancel }: UserFormProps) {
   );
 }
 
-export default UserForm;
+

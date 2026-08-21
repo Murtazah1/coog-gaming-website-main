@@ -6,11 +6,8 @@ import { db } from "@/db";
 import { users } from "@/db/schema/users";
 import { members } from "@/db/schema/members";
 import { admins, type Admin } from "@/db/schema/admins";
-
 import { asc, eq, ilike, isNull, or } from "drizzle-orm";
-
 import * as z from "zod";
-
 import safeAction from "./safe-action";
 
 type CreateAdminInput = {
@@ -30,7 +27,6 @@ const adminRoleSchema = z
 
 const createAdminSchema = z.object({
   memberId: z.uuid("A valid member must be selected"),
-
   role: adminRoleSchema,
 });
 
@@ -44,12 +40,10 @@ const updateAdminSchema = z
 
 export async function getAdmins(search?: string) {
   const cleanSearch = search?.trim();
-
   return safeAction(() =>
     db
       .select({
         admin: admins,
-
         member: {
           id: members.id,
           discordName: members.discordName,

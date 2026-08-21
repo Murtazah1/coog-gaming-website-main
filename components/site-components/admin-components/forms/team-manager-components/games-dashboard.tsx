@@ -1,8 +1,8 @@
-import React from "react";
+
 
 
 import GameCollapsible from "./game-collapsible/game-collapsible";
-import type { Member } from "@/db/schema";
+
 
 export type DashboardMember = {
   id: string;
@@ -39,7 +39,7 @@ export default function GamesDashboard({
   games, members
 }: GameManagementDashboardProps) {
   return (
-    <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] items-start gap-4">
       {games.map((game) => (
         <div key={game.id}>
           <GameCollapsible game={game} members={members} />
