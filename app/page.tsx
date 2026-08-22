@@ -1,4 +1,4 @@
-import VisitorCalendar from "@/components/site-components/visitor-calendar/visitor-calendar";
+import VisitorCalendar from "@/components/site-components/homepage-components/visitor-calendar/visitor-calendar";
 import { getEvents } from "@/server/events";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
