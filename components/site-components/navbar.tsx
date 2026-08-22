@@ -15,9 +15,9 @@ export default function Navbar() {
           <Image
             src="/coog-gaming-logo.png"
             alt="Coog Gaming"
-            width={40}
-            height={40}
-            className="object-contain"
+            width={500}
+            height={563}
+            className="h-10 w-auto object-contain"
           />
         </Link>
 

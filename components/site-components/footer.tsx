@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="mt-12 border-t bg-gray-900 text-gray-300">
+    <footer className="border-t bg-gray-900 text-gray-300">
       <div className="container mx-auto px-6 py-10">
         <div className="grid gap-10 md:grid-cols-3">
           {/* Coog Gaming */}
@@ -13,9 +13,9 @@ export default function Footer() {
               <Image
                 src="/coog-gaming-logo.png"
                 alt="Coog Gaming"
-                width={140}
-                height={40}
-                className="object-contain"
+                width={500}
+                height={563}
+                className="h-10 w-auto object-contain"
               />
             </div>
 
