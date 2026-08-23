@@ -4,7 +4,7 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar";
 import { getAdminRoleLabel } from "@/db/schema/admins";
-import { getAdmins } from "@/server/admins";
+import { getPublicAdmins } from "@/server/admins";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,6 @@ function getDisplayName(
   firstName: string | null,
   lastName: string | null,
   gamerName: string | null,
-  email: string,
 ) {
   const name = [
     firstName,
@@ -22,7 +21,7 @@ function getDisplayName(
     .filter(Boolean)
     .join(" ");
 
-  return name || email;
+  return name || "COOG Gaming Officer";
 }
 
 function getInitials(name: string) {
@@ -35,7 +34,7 @@ function getInitials(name: string) {
 }
 
 export default async function Page() {
-  const { data: admins, error } = await getAdmins();
+  const { data: admins, error } = await getPublicAdmins();
 
   return (
     <main className="min-h-screen bg-[url('/uh-site-background.png')] bg-cover bg-center bg-fixed px-4 py-16 text-white sm:px-6 lg:px-8">
@@ -79,14 +78,13 @@ export default async function Page() {
                   member.firstName,
                   member.lastName,
                   member.gamerName,
-                  member.email,
                 );
                 const initialsName =
                   [member.firstName, member.lastName]
                     .filter(Boolean)
                     .join(" ") ||
                   member.gamerName ||
-                  member.email;
+                  "COOG Gaming";
 
                 return (
                   <li

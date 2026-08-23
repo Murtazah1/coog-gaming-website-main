@@ -113,7 +113,8 @@ export function NavbarClient({ account }: NavbarClientProps) {
             {...account}
             isActive={
               pathname.startsWith("/profile") ||
-              pathname.startsWith("/membership")
+              pathname.startsWith("/membership") ||
+              pathname.startsWith("/admin")
             }
           />
         </div>

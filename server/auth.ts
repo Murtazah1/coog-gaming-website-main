@@ -38,14 +38,23 @@ export async function requireUser() {
   return user;
 }
 
-export async function requireAdmin() {
-  const user = await requireUser();
+export async function getAdminForUserId(userId: string) {
   const [admin] = await db
-    .select({ id: admins.id })
+    .select({
+      id: admins.id,
+      role: admins.role,
+    })
     .from(admins)
     .innerJoin(members, eq(admins.memberId, members.id))
-    .where(eq(members.userId, user.id))
+    .where(eq(members.userId, userId))
     .limit(1);
+
+  return admin ?? null;
+}
+
+export async function requireAdmin() {
+  const user = await requireUser();
+  const admin = await getAdminForUserId(user.id);
 
   if (!admin) {
     throw new Error("You must be an admin to perform this action.");

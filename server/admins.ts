@@ -9,6 +9,7 @@ import { admins, type Admin } from "@/db/schema/admins";
 import { asc, eq, ilike, isNull, or } from "drizzle-orm";
 import * as z from "zod";
 import safeAction from "./safe-action";
+import { requireAdmin } from "./auth";
 
 type CreateAdminInput = {
   memberId: string;
@@ -38,10 +39,34 @@ const updateAdminSchema = z
     message: "At least one field needs to be provided",
   });
 
-export async function getAdmins(search?: string) {
-  const cleanSearch = search?.trim();
+export async function getPublicAdmins() {
   return safeAction(() =>
     db
+      .select({
+        admin: {
+          id: admins.id,
+          role: admins.role,
+        },
+        member: {
+          gamerName: users.gamerName,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          avatarUrl: users.avatarUrl,
+        },
+      })
+      .from(admins)
+      .innerJoin(members, eq(admins.memberId, members.id))
+      .innerJoin(users, eq(members.userId, users.id))
+      .orderBy(asc(admins.role)),
+  );
+}
+
+export async function getAdmins(search?: string) {
+  const cleanSearch = search?.trim();
+  return safeAction(async () => {
+    await requireAdmin();
+
+    return db
       .select({
         admin: admins,
         member: {
@@ -66,12 +91,14 @@ export async function getAdmins(search?: string) {
             )
           : undefined,
       )
-      .orderBy(asc(admins.role)),
-  );
+      .orderBy(asc(admins.role));
+  });
 }
 
 export async function getAdminByID(id: string) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const adminId = adminIdSchema.parse(id);
 
     const [admin] = await db
@@ -100,6 +127,8 @@ export async function getAdminByID(id: string) {
 // Get members who are NOT already admins.
 export async function getNonAdmins() {
   return safeAction(async () => {
+    await requireAdmin();
+
     return db
       .select({
         id: members.id,
@@ -118,6 +147,8 @@ export async function getNonAdmins() {
 
 export async function createAdmin(input: CreateAdminInput) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const cleanInput = createAdminSchema.parse(input);
 
     // Make sure the member exists.
@@ -164,6 +195,8 @@ export async function createAdmin(input: CreateAdminInput) {
 
 export async function updateAdmin(id: string, input: UpdateAdminInput) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const adminId = adminIdSchema.parse(id);
 
     const cleanInput = updateAdminSchema.parse(input);
@@ -184,6 +217,8 @@ export async function updateAdmin(id: string, input: UpdateAdminInput) {
 
 export async function deleteAdmin(id: string) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const adminId = adminIdSchema.parse(id);
 
     const [deletedAdmin] = await db

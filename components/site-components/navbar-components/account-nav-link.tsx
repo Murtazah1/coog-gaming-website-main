@@ -4,6 +4,7 @@ import {
   ChevronDown,
   CircleUserRound,
   Settings,
+  ShieldCheck,
 } from "lucide-react";
 
 import { SignOutButton } from "@/components/site-components/login-components/sign-out-button";
@@ -31,6 +32,7 @@ import {
 export type AccountNavData = {
   isSignedIn: boolean;
   isMember: boolean;
+  isAdmin: boolean;
   avatarUrl: string | null;
   firstName: string | null;
   lastName: string | null;
@@ -43,6 +45,7 @@ type AccountNavLinkProps = AccountNavData & {
 export function AccountNavLink({
   isSignedIn,
   isMember,
+  isAdmin,
   avatarUrl,
   firstName,
   lastName,
@@ -120,6 +123,17 @@ export function AccountNavLink({
             <Link href="/membership">
               <BadgeCheck aria-hidden="true" />
               View membership
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
+        {isAdmin ? (
+          <DropdownMenuItem
+            asChild
+            className="cursor-pointer py-2.5 text-base focus:bg-red-950/70 focus:text-white"
+          >
+            <Link href="/admin">
+              <ShieldCheck aria-hidden="true" />
+              Admin dashboard
             </Link>
           </DropdownMenuItem>
         ) : null}
