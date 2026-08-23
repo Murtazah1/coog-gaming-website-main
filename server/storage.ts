@@ -9,6 +9,7 @@ import {
   deleteAvatarFile,
   uploadAvatarFile,
 } from "@/lib/supabase/avatar-storage";
+import { requireAdmin } from "./auth";
 import { getStoragePathFromUrl } from "./utils";
 
 export async function uploadAvatar(
@@ -16,6 +17,16 @@ export async function uploadAvatar(
   // here we are making a new varaiable of this FormData type
   formData: FormData,
 ): Promise<{ url: string | null; error: string | null }> {
+  try {
+    await requireAdmin();
+  } catch (error) {
+    return {
+      url: null,
+      error:
+        error instanceof Error ? error.message : "Administrator access required.",
+    };
+  }
+
   const file = formData.get("file");
 
   if (!(file instanceof File)) {
@@ -36,6 +47,16 @@ export async function uploadAvatar(
 export async function uploadGameImage(
   formData: FormData,
 ): Promise<{ url: string | null; error: string | null }> {
+  try {
+    await requireAdmin();
+  } catch (error) {
+    return {
+      url: null,
+      error:
+        error instanceof Error ? error.message : "Administrator access required.",
+    };
+  }
+
   const file = formData.get("file") as File | null;
 
   if (!file || file.size === 0) {
@@ -78,6 +99,15 @@ export async function uploadGameImage(
 export async function deleteGameImage(
   imageUrl: string,
 ): Promise<{ error: string | null }> {
+  try {
+    await requireAdmin();
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Administrator access required.",
+    };
+  }
+
   const supabase = createAdminClient();
 
   try {
@@ -110,6 +140,15 @@ export async function deleteGameImage(
 export async function deleteAvatar(
   avatarUrl: string,
 ): Promise<{ error: string | null }> {
+  try {
+    await requireAdmin();
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Administrator access required.",
+    };
+  }
+
   try {
     await deleteAvatarFile(avatarUrl);
     return {
