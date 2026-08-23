@@ -44,13 +44,13 @@ export default function VisitorCalendar({ events }: VisitorCalendarProps) {
     : [];
 
   return (
-    <div className="overflow-hidden rounded-xl border border-red-500/30 bg-gray-950/70 backdrop-blur-lg">
+    <div className="overflow-hidden rounded-xl border border-red-500/40 bg-black/95 text-gray-50 shadow-2xl backdrop-blur-xl">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between border-b border-red-500/30 p-3">
+      <div className="flex items-center justify-between border-b border-red-500/40 bg-black/75 p-4">
         <div className="flex items-center gap-2">
           <Button
             onClick={handleToday}
-            className="border border-red-500/40 bg-gray-900 text-white hover:bg-red-950"
+            className="border border-red-500/50 bg-black/80 text-base text-white hover:bg-red-950"
           >
             Today
           </Button>
@@ -59,7 +59,7 @@ export default function VisitorCalendar({ events }: VisitorCalendarProps) {
             variant="ghost"
             size="icon"
             onClick={handlePreviousMonth}
-            className="text-white hover:bg-red-950 hover:text-white"
+            className="text-gray-100 hover:bg-red-950 hover:text-white"
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
@@ -68,13 +68,13 @@ export default function VisitorCalendar({ events }: VisitorCalendarProps) {
             variant="ghost"
             size="icon"
             onClick={handleNextMonth}
-            className="text-white hover:bg-red-950 hover:text-white"
+            className="text-gray-100 hover:bg-red-950 hover:text-white"
           >
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
 
-        <h2 className="text-xl font-bold text-white">
+        <h2 className="text-2xl font-bold text-white">
           {currentMonth.format("MMMM YYYY")}
         </h2>
       </div>

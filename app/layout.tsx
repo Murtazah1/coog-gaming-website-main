@@ -1,6 +1,6 @@
 import "./globals.css";
 
-import Navbar from "@/components/site-components/navbar";
+import Navbar from "@/components/site-components/navbar-components/navbar";
 import Footer from "@/components/site-components/footer";
 import { Geo, Zen_Dots } from "next/font/google";
 import { Toaster } from "sonner";

@@ -40,7 +40,7 @@ export default async function Page() {
   return (
     <main className="min-h-screen bg-[url('/uh-site-background.png')] bg-cover bg-center bg-fixed px-4 py-16 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-10">
-        <section className="rounded-2xl border border-red-500/30 bg-gradient-to-br from-gray-950/80 via-red-950/80 to-gray-900/70 px-6 py-10 text-center shadow-2xl backdrop-blur-lg sm:px-10">
+        <section className="rounded-2xl border border-red-500/30 bg-gradient-to-br from-gray-950/95 via-red-950/90 to-gray-900/90 px-6 py-10 text-center shadow-2xl backdrop-blur-lg sm:px-10">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-red-300">
             University of Houston
           </p>
@@ -91,7 +91,7 @@ export default async function Page() {
                 return (
                   <li
                     key={admin.id}
-                    className="group flex flex-col items-center gap-4 rounded-xl border border-white/15 bg-gray-950/75 p-6 text-center shadow-lg backdrop-blur-md transition hover:-translate-y-0.5 hover:border-red-500/50 hover:bg-red-950/70"
+                    className="group flex flex-col items-center gap-4 rounded-xl border border-white/15 bg-gray-950/90 p-6 text-center shadow-lg backdrop-blur-md transition hover:-translate-y-0.5 hover:border-red-500/50 hover:bg-red-950/90"
                   >
                     <Avatar className="h-20 w-20 shrink-0 rounded-full border border-red-500/40">
                       <AvatarImage
@@ -115,7 +115,7 @@ export default async function Page() {
               })}
             </ol>
           ) : (
-            <div className="rounded-xl border border-white/15 bg-gray-950/75 p-6 text-center text-gray-300 backdrop-blur-md">
+            <div className="rounded-xl border border-white/15 bg-gray-950/90 p-6 text-center text-gray-100 backdrop-blur-md">
               Leadership details are coming soon.
             </div>
           )}

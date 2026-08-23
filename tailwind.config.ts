@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -10,6 +11,21 @@ export default {
   ],
   theme: {
     extend: {
+      fontSize: {
+        xs: ["0.875rem", { lineHeight: "1.25rem" }],
+        sm: ["1rem", { lineHeight: "1.5rem" }],
+        base: ["1.125rem", { lineHeight: "1.75rem" }],
+        lg: ["1.25rem", { lineHeight: "1.875rem" }],
+        xl: ["1.5rem", { lineHeight: "2rem" }],
+        "2xl": ["1.875rem", { lineHeight: "2.375rem" }],
+        "3xl": ["2.25rem", { lineHeight: "2.75rem" }],
+        "4xl": ["2.75rem", { lineHeight: "3.25rem" }],
+        "5xl": ["3.5rem", { lineHeight: "1.1" }],
+        "6xl": ["4.25rem", { lineHeight: "1.05" }],
+        "7xl": ["5.25rem", { lineHeight: "1" }],
+        "8xl": ["7rem", { lineHeight: "1" }],
+        "9xl": ["9rem", { lineHeight: "1" }],
+      },
       fontFamily: {
         sans: ["var(--font-geo)", "ui-sans-serif", "system-ui", "sans-serif"],
         heading: [
@@ -68,5 +84,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

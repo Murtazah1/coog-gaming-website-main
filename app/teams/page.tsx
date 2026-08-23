@@ -7,14 +7,14 @@ export default async function Page() {
   return (
     <main className="min-h-screen bg-[url('/uh-site-background.png')] bg-cover bg-center bg-fixed bg-no-repeat px-4 py-12 text-white sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-[1600px] space-y-8">
-        <header className="rounded-xl border border-red-500/30 bg-gradient-to-br from-gray-950/70 via-red-950/90 to-gray-900/60 px-6 py-8 text-center shadow-xl backdrop-blur-lg sm:px-10">
+        <header className="rounded-xl border border-red-500/30 bg-gradient-to-br from-gray-950/95 via-red-950/95 to-gray-900/90 px-6 py-8 text-center shadow-xl backdrop-blur-lg sm:px-10">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-300">
             Coog Gaming Rosters
           </p>
           <h1 className="mt-3 text-3xl font-bold sm:text-4xl">
             Meet Our Teams
           </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-sm text-gray-300 sm:text-base">
+          <p className="mx-auto mt-3 max-w-2xl text-sm text-gray-100 sm:text-base">
             Explore the games we compete in and meet the Cougars representing
             each roster.
           </p>
@@ -26,7 +26,7 @@ export default async function Page() {
             className="rounded-xl border border-red-500/40 bg-gray-950/80 px-6 py-10 text-center shadow-xl backdrop-blur-lg"
           >
             <h2 className="text-xl font-semibold">Unable to load teams</h2>
-            <p className="mt-2 text-sm text-gray-300">
+            <p className="mt-2 text-sm text-gray-100">
               Please try again later.
             </p>
           </div>

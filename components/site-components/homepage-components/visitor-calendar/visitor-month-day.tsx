@@ -23,7 +23,7 @@ export default function VisitorMonthDay({
   const isOutsideMonth = day.month() !== currentMonth.month();
   if (isOutsideMonth) {
     return (
-      <div className="min-h-[80px] border-b border-r border-gray-800 bg-gray-950/30" />
+      <div className="min-h-[96px] border-b border-r border-gray-800 bg-black/95" />
     );
   }
 
@@ -35,20 +35,20 @@ export default function VisitorMonthDay({
 
   return (
     <div
-        onClick={() => onDayClick(day)}
+      onClick={() => onDayClick(day)}
       className={cn(
-        "max-h-[90px] cursor-pointer overflow-hidden border-b border-r border-gray-800 p-2",
-    "bg-gray-900/40 transition-colors hover:bg-red-950/30",
-        isOutsideMonth ? "bg-gray-950/50" : "bg-gray-900/40",
+        "min-h-[96px] max-h-[112px] cursor-pointer overflow-hidden border-b border-r border-gray-800 p-2.5",
+        "bg-black/85 transition-colors hover:bg-red-950/75",
+        isOutsideMonth ? "bg-black/95" : "bg-black/85",
       )}
     >
       {/* Day Number */}
       <div className="mb-2 flex justify-end">
         <span
           className={cn(
-            "flex h-7 w-7 items-center justify-center text-sm",
-            isOutsideMonth && "text-gray-600",
-            !isOutsideMonth && "text-gray-300",
+            "flex h-8 w-8 items-center justify-center text-base font-medium",
+            isOutsideMonth && "text-gray-400",
+            !isOutsideMonth && "text-gray-100",
             isToday && "rounded-full bg-red-600 font-semibold text-white",
           )}
         >
@@ -57,13 +57,9 @@ export default function VisitorMonthDay({
       </div>
 
       {/* Events */}
-      <div className="">
+      <div className="space-y-1">
         {dayEvents.map((event) => (
-          <VisitorEventTag
-            key={event.id}
-            event={event}
-            
-          />
+          <VisitorEventTag key={event.id} event={event} />
         ))}
       </div>
     </div>

@@ -28,7 +28,7 @@ function getMemberInitials(member: TeamPageMember) {
 export default function TeamRoster({ members }: TeamRosterProps) {
   if (members.length === 0) {
     return (
-      <p className="px-1 py-2 text-sm text-gray-400">
+      <p className="px-1 py-2 text-sm text-gray-200">
         No members have been announced for this team.
       </p>
     );
@@ -42,7 +42,7 @@ export default function TeamRoster({ members }: TeamRosterProps) {
         return (
           <div
             key={member.id}
-            className="flex items-center gap-3 rounded-md border border-white/10 bg-gray-950/40 p-2.5"
+            className="flex items-center gap-3 rounded-md border border-white/10 bg-gray-950/75 p-2.5"
           >
             <Avatar className="h-10 w-10 border border-red-500/30">
               <AvatarImage

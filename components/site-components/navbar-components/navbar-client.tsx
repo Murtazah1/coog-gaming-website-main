@@ -1,11 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { Gamepad2, House, Info, UsersRound } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
+
+import {
+  AccountNavLink,
+  type AccountNavData,
+} from "./account-nav-link";
+import { NavbarLink } from "./navbar-link";
 
 const links = [
   { href: "/", label: "Home", icon: House },
@@ -13,7 +19,11 @@ const links = [
   { href: "/about", label: "About", icon: Info },
 ];
 
-export default function Navbar() {
+type NavbarClientProps = {
+  account: AccountNavData;
+};
+
+export function NavbarClient({ account }: NavbarClientProps) {
   const pathname = usePathname();
 
   return (
@@ -80,41 +90,29 @@ export default function Navbar() {
               href === "/" ? pathname === href : pathname.startsWith(href);
 
             return (
-              <Link
+              <NavbarLink
                 key={href}
                 href={href}
-                aria-current={isActive ? "page" : undefined}
-                title={label}
-                className={cn(
-                  "group/link relative flex h-10 items-center justify-center gap-2 overflow-hidden rounded-lg border px-3 text-sm uppercase tracking-[0.16em] outline-none transition duration-300 focus-visible:ring-2 focus-visible:ring-red-400 sm:min-w-24 sm:px-4",
-                  isActive
-                    ? "border-red-500/45 bg-gradient-to-b from-red-900/60 to-red-950/35 text-white shadow-[0_0_18px_rgba(220,38,38,0.18),inset_0_1px_0_rgba(248,113,113,0.18)]"
-                    : "border-transparent text-zinc-400 hover:border-white/10 hover:bg-white/[0.045] hover:text-white",
-                )}
+                label={label}
+                isActive={isActive}
               >
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "absolute inset-x-3 bottom-0 h-px origin-center bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.9)] transition-transform duration-300",
-                    isActive
-                      ? "scale-x-100"
-                      : "scale-x-0 group-hover/link:scale-x-100",
-                  )}
-                />
                 <Icon
                   aria-hidden="true"
                   className={cn(
                     "h-4 w-4 shrink-0 transition-colors",
                     isActive
                       ? "text-red-300"
-                      : "text-zinc-500 group-hover/link:text-red-400",
+                      : "text-zinc-300 group-hover/link:text-red-400",
                   )}
                 />
-                <span className="hidden sm:inline">{label}</span>
-                <span className="sr-only sm:hidden">{label}</span>
-              </Link>
+              </NavbarLink>
             );
           })}
+
+          <AccountNavLink
+            {...account}
+            isActive={pathname.startsWith("/profile")}
+          />
         </div>
       </div>
     </nav>

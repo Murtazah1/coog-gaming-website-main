@@ -10,7 +10,7 @@ type GameCardProps = {
 
 export default function GameCard({ game }: GameCardProps) {
   return (
-    <details className="group/game overflow-hidden rounded-xl border border-red-500/30 bg-gradient-to-br from-gray-950/80 via-red-950/80 to-gray-900/70 text-white shadow-xl backdrop-blur-lg">
+    <details className="group/game overflow-hidden rounded-xl border border-red-500/30 bg-gradient-to-br from-gray-950/95 via-red-950/90 to-gray-900/90 text-white shadow-xl backdrop-blur-lg">
       <summary className="flex cursor-pointer list-none items-center gap-4 p-5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-400 [&::-webkit-details-marker]:hidden">
         <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-black/30">
           {game.imageUrl ? (
@@ -28,7 +28,7 @@ export default function GameCard({ game }: GameCardProps) {
 
         <div className="min-w-0 flex-1 text-left">
           <h2 className="truncate text-xl font-semibold">{game.name}</h2>
-          <p className="mt-1 text-sm font-normal text-gray-300">
+          <p className="mt-1 text-sm font-normal text-gray-100">
             {game.teams.length} {game.teams.length === 1 ? "team" : "teams"}
           </p>
         </div>
@@ -40,7 +40,7 @@ export default function GameCard({ game }: GameCardProps) {
         {game.teams.length > 0 ? (
           game.teams.map((team) => <TeamCard key={team.id} team={team} />)
         ) : (
-          <p className="text-sm text-gray-300">
+          <p className="text-sm text-gray-100">
             No teams have been announced for this game.
           </p>
         )}

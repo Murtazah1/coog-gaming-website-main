@@ -15,7 +15,7 @@
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted-foreground: 0 0% 32%;
     --accent: 0 0% 96.1%;
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
@@ -42,7 +42,7 @@
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
+    --muted-foreground: 0 0% 78%;
     --accent: 0 0% 14.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
@@ -63,7 +63,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background font-sans text-foreground antialiased;
+    @apply bg-background font-sans text-base text-foreground antialiased;
     letter-spacing: 0.02em;
   }
   h1,
@@ -74,5 +74,20 @@
   h6 {
     @apply font-heading;
     letter-spacing: 0.035em;
+  }
+  h1 {
+    @apply text-4xl leading-tight;
+  }
+  h2 {
+    @apply text-3xl leading-tight;
+  }
+  h3 {
+    @apply text-2xl leading-snug;
+  }
+  h4 {
+    @apply text-xl leading-snug;
+  }
+  p {
+    @apply leading-relaxed;
   }
 }

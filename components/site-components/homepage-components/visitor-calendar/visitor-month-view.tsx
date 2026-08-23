@@ -34,13 +34,12 @@ export default function VisitorMonthView({
   return (
     <div className="overflow-x-auto">
       <div className="min-w-[800px]">
-
         {/* Weekday Header */}
-        <div className="grid grid-cols-7 border-b border-gray-700">
+        <div className="grid grid-cols-7 border-b border-gray-700 bg-black/70">
           {weekDays.map((day) => (
             <div
               key={day}
-              className="p-3 text-center text-xs font-semibold text-gray-400"
+              className="p-3 text-center text-sm font-semibold tracking-wide text-gray-100"
             >
               {day}
             </div>

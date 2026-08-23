@@ -14,7 +14,7 @@ pnpm db:generate  # Generate drizzle migrations from db/schema changes
 pnpm db:migrate   # Apply pending drizzle migrations
 pnpm db:push      # Push schema directly to DB (no migration files)
 pnpm db:studio    # Open drizzle-kit studio
-pnpm db:seed      # NOTE: script references db/seed.ts, which does not exist yet
+pnpm db:seed      # Seed idempotent Auth + app fixtures (requires SEED_TEST_PASSWORD)
 ```
 
 No test framework is configured — there is no `test` script.
