@@ -5,9 +5,11 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   firstName: text("first_name"),
   lastName: text("last_name"),
+  gamerName: text("gamer_name"),
   avatarUrl: text("avatar_url"),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 export type User = typeof users.$inferSelect;
-

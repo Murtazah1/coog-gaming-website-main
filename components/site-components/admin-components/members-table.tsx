@@ -54,7 +54,7 @@ export default async function MembersTable({ search }: MembersTableProps) {
 
       
 
-      <SearchInput placeholder="Search by name, email, or discord name" />
+      <SearchInput placeholder="Search by name, gamer name, or email" />
 
       <Table>
         <TableCaption>A table of members</TableCaption>
@@ -95,7 +95,7 @@ export default async function MembersTable({ search }: MembersTableProps) {
               
               <TableCell>{user.firstName}</TableCell>
               <TableCell>{user.lastName}</TableCell>
-              <TableCell>{member.discordName}</TableCell>
+              <TableCell>{user.gamerName}</TableCell>
               <TableCell>{member.planType}</TableCell>
               <TableCell>{formatDate(member.currentPeriodEnd)}</TableCell>
               <TableCell><MemberRowActions

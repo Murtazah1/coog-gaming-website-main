@@ -45,13 +45,13 @@ export async function getTeamsWithMembersByGameID(gameId: string) {
           columns: {
             id: true,
             userId: true,
-            discordName: true,
           },
           with: {
             user: {
               columns: {
                 firstName: true,
                 lastName: true,
+                gamerName: true,
                 avatarUrl: true,
               },
             },

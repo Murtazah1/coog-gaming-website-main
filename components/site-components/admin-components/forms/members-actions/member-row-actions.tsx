@@ -17,7 +17,7 @@ import type { Member } from "@/db/schema";
 import { deleteMember } from "@/server/members";
 import MemberForm from "./members-form";
 
-type NonMember = Pick<User, "id" | "email" | "firstName" | "lastName">;
+type NonMember = Pick<User, "id" | "email" | "firstName" | "lastName" | "gamerName">;
 
 
 // make an interface for the user type in typescript
@@ -34,7 +34,7 @@ export default function MemberRowActions({ member, user }: MemberRowActionsProps
   const [deleting, setDeleting] = useState(false);
 
   async function handleDelete() {
-    if (!confirm(`Delete Member ${user.firstName} ${user.lastName} - ${member.discordName}?`)) return;
+    if (!confirm(`Delete Member ${user.firstName} ${user.lastName} - ${user.gamerName}?`)) return;
     // deleteUser returns either nothing or an error because we use drizzle code to delete whatever user we need to delete in the db
     // so if there is an error we can handle it else we continue on as normal
     setDeleting(true);
@@ -64,7 +64,7 @@ export default function MemberRowActions({ member, user }: MemberRowActionsProps
           size="icon"
           onClick={() => setDialogOpen(true)}
           disabled={deleting}
-          aria-label={`Edit ${user.firstName} ${user.lastName} - ${member.discordName}`}
+          aria-label={`Edit ${user.firstName} ${user.lastName} - ${user.gamerName}`}
         >
           <Pen className="h-4 w-4" />
         </Button>
@@ -73,7 +73,7 @@ export default function MemberRowActions({ member, user }: MemberRowActionsProps
           size="icon"
           onClick={handleDelete}
           disabled={deleting}
-          aria-label={`Delete ${user.firstName} ${user.lastName} - ${member.discordName}`}
+          aria-label={`Delete ${user.firstName} ${user.lastName} - ${user.gamerName}`}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -100,5 +100,4 @@ export default function MemberRowActions({ member, user }: MemberRowActionsProps
     </>
   );
 }
-
 

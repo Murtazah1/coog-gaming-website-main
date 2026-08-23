@@ -1,9 +1,9 @@
 export type TeamPageMember = {
   id: string;
-  discordName: string | null;
   user: {
     firstName: string | null;
     lastName: string | null;
+    gamerName: string | null;
     avatarUrl: string | null;
   };
 };

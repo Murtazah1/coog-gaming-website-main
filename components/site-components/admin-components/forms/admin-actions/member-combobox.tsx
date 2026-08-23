@@ -26,7 +26,7 @@ function getMemberLabel(member: AdminMember) {
     .filter(Boolean)
     .join(" ");
 
-  return fullName ? `${fullName} - ${member.discordName}` : member.email;
+  return fullName ? `${fullName} - ${member.gamerName}` : member.email;
 }
 
 export default function MemberComboBox({
@@ -58,7 +58,7 @@ export default function MemberComboBox({
         <div className="relative">
           <ComboboxInput
             aria-label="Select a member"
-            placeholder="Search by name or email"
+            placeholder="Search by name, gamer name, or email"
             displayValue={(member: AdminMember | null) =>
               member ? getMemberLabel(member) : ""
             }

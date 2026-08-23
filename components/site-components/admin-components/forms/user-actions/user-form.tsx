@@ -27,6 +27,7 @@ const baseSchema = z.object({
   email: z.email("Enter in a valid email address"),
   firstName: z.string().min(1, "First Name is required"),
   lastName: z.string().min(1, "Last Name is required"),
+  gamerName: z.string().optional(),
 });
 
 const createSchema = baseSchema.extend({
@@ -92,6 +93,7 @@ export default function UserForm({ mode, user, onSuccess, onCancel }: UserFormPr
       password: "",
       firstName: user?.firstName ?? "",
       lastName: user?.lastName ?? "",
+      gamerName: user?.gamerName ?? "",
     },
   });
 
@@ -160,6 +162,7 @@ export default function UserForm({ mode, user, onSuccess, onCancel }: UserFormPr
         email: values.email,
         firstName: values.firstName,
         lastName: values.lastName,
+        gamerName: values.gamerName?.trim() || null,
         avatarUrl,
       };
       // if we are creating a user then
@@ -222,6 +225,13 @@ export default function UserForm({ mode, user, onSuccess, onCancel }: UserFormPr
       label: "Last Name",
       type: "text",
       placeholder: "One",
+      show: true,
+    },
+    {
+      name: "gamerName",
+      label: "Gamer Name",
+      type: "text",
+      placeholder: "Optional gamer name",
       show: true,
     },
   ] as const;
@@ -328,5 +338,4 @@ export default function UserForm({ mode, user, onSuccess, onCancel }: UserFormPr
     </Form>
   );
 }
-
 

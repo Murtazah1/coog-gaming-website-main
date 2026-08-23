@@ -41,24 +41,28 @@ const authFixtures = [
     email: "seed.president@cooggaming.test",
     firstName: "Test",
     lastName: "President",
+    gamerName: "seed-president",
   },
   {
     key: "eventAdmin",
     email: "seed.event-admin@cooggaming.test",
     firstName: "Test",
     lastName: "Event Admin",
+    gamerName: "seed-event-admin",
   },
   {
     key: "member",
     email: "seed.member@cooggaming.test",
     firstName: "Test",
     lastName: "Member",
+    gamerName: "seed-member",
   },
   {
     key: "user",
     email: "seed.user@cooggaming.test",
     firstName: "Test",
     lastName: "User",
+    gamerName: "seed-user",
   },
 ] as const;
 
@@ -202,6 +206,7 @@ async function main() {
         email: fixture.email,
         firstName: fixture.firstName,
         lastName: fixture.lastName,
+        gamerName: fixture.gamerName,
         avatarUrl: null,
       };
     });
@@ -220,6 +225,7 @@ async function main() {
               email: row.email,
               firstName: row.firstName,
               lastName: row.lastName,
+              gamerName: row.gamerName,
               avatarUrl: row.avatarUrl,
             },
           });
@@ -260,21 +266,18 @@ async function main() {
           userId: presidentUser.id,
           planType: "year" as const,
           currentPeriodEnd: periodEnd,
-          discordName: "seed-president",
         },
         {
           id: ids.eventAdminMember,
           userId: eventAdminUser.id,
           planType: "year" as const,
           currentPeriodEnd: periodEnd,
-          discordName: "seed-event-admin",
         },
         {
           id: ids.regularMember,
           userId: memberUser.id,
           planType: "semester" as const,
           currentPeriodEnd: periodEnd,
-          discordName: "seed-member",
         },
       ];
 
@@ -288,7 +291,6 @@ async function main() {
               userId: row.userId,
               planType: row.planType,
               currentPeriodEnd: row.currentPeriodEnd,
-              discordName: row.discordName,
             },
           });
       }

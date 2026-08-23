@@ -50,6 +50,7 @@ export default async function ProfilePage() {
           <ProfileInformationCard
             firstName={profile.firstName}
             lastName={profile.lastName}
+            gamerName={profile.gamerName}
             avatarUrl={profile.avatarUrl}
             createdAt={profile.createdAt.toISOString()}
           />

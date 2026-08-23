@@ -11,12 +11,12 @@ export const dynamic = "force-dynamic";
 function getDisplayName(
   firstName: string | null,
   lastName: string | null,
-  discordName: string | null,
+  gamerName: string | null,
   email: string,
 ) {
   const name = [
     firstName,
-    discordName ? `"${discordName}"` : null,
+    gamerName ? `"${gamerName}"` : null,
     lastName,
   ]
     .filter(Boolean)
@@ -78,14 +78,14 @@ export default async function Page() {
                 const displayName = getDisplayName(
                   member.firstName,
                   member.lastName,
-                  member.discordName,
+                  member.gamerName,
                   member.email,
                 );
                 const initialsName =
                   [member.firstName, member.lastName]
                     .filter(Boolean)
                     .join(" ") ||
-                  member.discordName ||
+                  member.gamerName ||
                   member.email;
 
                 return (

@@ -18,11 +18,11 @@ export default async function Page() {
     ({ member, user }) => ({
       id: member.id,
       userId: member.userId,
-      discordName: member.discordName,
 
       user: {
         firstName: user.firstName,
         lastName: user.lastName,
+        gamerName: user.gamerName,
         avatarUrl: user.avatarUrl,
       },
     }),

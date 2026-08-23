@@ -9,7 +9,7 @@ type TeamRosterProps = {
 function getMemberName(member: TeamPageMember) {
   return [
     member.user.firstName,
-    member.discordName ? `"${member.discordName}"` : null,
+    member.user.gamerName ? `"${member.user.gamerName}"` : null,
     member.user.lastName,
   ]
     .filter(Boolean)
@@ -22,7 +22,7 @@ function getMemberInitials(member: TeamPageMember) {
     .join("")
     .toUpperCase();
 
-  return initials || member.discordName?.[0]?.toUpperCase() || "M";
+  return initials || member.user.gamerName?.[0]?.toUpperCase() || "M";
 }
 
 export default function TeamRoster({ members }: TeamRosterProps) {

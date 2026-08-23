@@ -27,7 +27,6 @@ type NonMember = Pick<User, "id" | "email" | "firstName" | "lastName">;
 
 const memberFormSchema = z.object({
   planType: z.enum(planTypeEnum),
-  discordName: z.string().optional(),
   currentPeriodEnd: z.string().optional(),
 });
 
@@ -52,12 +51,6 @@ interface EditProps {
 
 type MemberFormProps = CreateProps | EditProps;
 
-function getUserLabel(user: NonMember) {
-  const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
-
-  return fullName ? `${fullName} - ${user.email}` : user.email;
-}
-
 export default function MemberForm({
   mode,
   user,
@@ -72,8 +65,6 @@ export default function MemberForm({
     defaultValues: {
       planType: member?.planType ?? planTypeEnum[0],
 
-      discordName: member?.discordName ?? "",
-
       currentPeriodEnd: member?.currentPeriodEnd ?? "",
     },
   });
@@ -82,8 +73,6 @@ export default function MemberForm({
     try {
       const memberData = {
         planType: values.planType,
-
-        discordName: values.discordName?.trim() || null,
 
         currentPeriodEnd: values.currentPeriodEnd?.trim() || null,
       };
@@ -146,26 +135,6 @@ export default function MemberForm({
                   ))}
                 </select>
               </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="discordName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Gamer Name</FormLabel>
-
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder="Gamer Name"
-                  disabled={saving}
-                />
-              </FormControl>
-
               <FormMessage />
             </FormItem>
           )}

@@ -14,7 +14,9 @@ export const members = pgTable("members", {
     mode: "string"
   }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-  discordName: text("discord_name"),
+  // Compatibility bridge only. New application code reads and writes users.gamerName.
+  // Remove this field after the expand migration has been verified in production.
+  legacyGamerName: text("discord_name"),
 });
 
 export type Member = typeof members.$inferSelect;

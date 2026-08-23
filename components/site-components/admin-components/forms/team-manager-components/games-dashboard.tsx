@@ -7,11 +7,11 @@ import GameCollapsible from "./game-collapsible/game-collapsible";
 export type DashboardMember = {
   id: string;
   userId: string;
-  discordName: string | null;
 
   user: {
     firstName: string | null;
     lastName: string | null;
+    gamerName: string | null;
     avatarUrl: string | null;
   };
 };

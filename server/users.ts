@@ -19,7 +19,7 @@ import { revalidatePath } from "next/cache";
 
 // just a type for making user updating easier
 type UpdateUserData = Partial<
-  Pick<User, "email" | "firstName" | "lastName" | "avatarUrl">
+  Pick<User, "email" | "firstName" | "lastName" | "gamerName" | "avatarUrl">
 >;
 
 // since users can technically call a server actions without using the user form I made we need to add zod validation in this file too
@@ -36,6 +36,12 @@ const createUserSchema = z.object({
     .nullable()
     .optional(),
   lastName: z.string().trim().min(1, "Give a last name").nullable().optional(),
+  gamerName: z
+    .string()
+    .trim()
+    .min(1, "Gamer Name cannot be empty")
+    .nullable()
+    .optional(),
   avatarUrl: z.url("Avatar URL must be valid").nullable(),
 });
 
@@ -54,6 +60,12 @@ const updateUserSchema = z
       .min(1, "Give a last name")
       .nullable()
       .optional(),
+    gamerName: z
+      .string()
+      .trim()
+      .min(1, "Gamer Name cannot be empty")
+      .nullable()
+      .optional(),
     avatarUrl: z.url("Avatar URL must be valid").nullable().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
@@ -67,6 +79,7 @@ type CreateUserInput = {
   password: string;
   firstName?: string | null;
   lastName?: string | null;
+  gamerName?: string | null;
   avatarUrl: string | null;
 };
 
@@ -84,6 +97,7 @@ const changePasswordSchema = z
 const ownProfileSchema = z.object({
   firstName: z.string().trim().max(100, "First name is too long"),
   lastName: z.string().trim().max(100, "Last name is too long"),
+  gamerName: z.string().trim(),
 });
 
 const ownEmailSchema = z
@@ -112,6 +126,11 @@ export async function getUsers(search?: string) {
               },
               {
                 lastName: {
+                  ilike: `%${cleanSearch}%`,
+                },
+              },
+              {
+                gamerName: {
                   ilike: `%${cleanSearch}%`,
                 },
               },
@@ -189,6 +208,7 @@ export async function createUser(data: CreateUserInput) {
         .set({
           firstName: validatedData.firstName,
           lastName: validatedData.lastName,
+          gamerName: validatedData.gamerName?.trim() || null,
           avatarUrl: validatedData.avatarUrl,
         })
         .where(eq(users.id, authData.user.id))
@@ -280,6 +300,10 @@ export async function updateUser(id: string, data: UpdateUserData) {
       databaseUpdateData.lastName = validData.lastName;
     }
 
+    if (validData.gamerName !== undefined) {
+      databaseUpdateData.gamerName = validData.gamerName?.trim() || null;
+    }
+
     if (validData.avatarUrl !== undefined) {
       databaseUpdateData.avatarUrl = validData.avatarUrl;
     }
@@ -365,6 +389,7 @@ export async function deleteUser(id: string) {
 export async function updateOwnProfile(data: {
   firstName: string;
   lastName: string;
+  gamerName: string;
 }) {
   return safeAction(async () => {
     const authenticatedUser = await requireUser();
@@ -375,6 +400,7 @@ export async function updateOwnProfile(data: {
       .set({
         firstName: cleanData.firstName || null,
         lastName: cleanData.lastName || null,
+        gamerName: cleanData.gamerName || null,
       })
       .where(eq(users.id, authenticatedUser.id))
       .returning();

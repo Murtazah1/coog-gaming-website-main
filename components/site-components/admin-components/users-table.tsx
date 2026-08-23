@@ -29,7 +29,7 @@ export default async function UsersTable({ search } : { search?: string}) {
         <AddUserButton />
       </div>
       {/* important thing to note how the search works, SearchInput changes the url based on the user's search, a function such as getUsers takes in what the user entered (that is stored in the url) then gives backs the results*/}
-      <SearchInput placeholder="Search by name or email" />
+      <SearchInput placeholder="Search by name, gamer name, or email" />
 
 
       <Table>
@@ -40,6 +40,7 @@ export default async function UsersTable({ search } : { search?: string}) {
             <TableHead className="w-[200px]">Email</TableHead>
             <TableHead>First Name</TableHead>
             <TableHead>Last Name</TableHead>
+            <TableHead>Gamer Name</TableHead>
             <TableHead className="text-right">Created At</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -69,6 +70,7 @@ export default async function UsersTable({ search } : { search?: string}) {
               <TableCell className="font-medium">{user.email}</TableCell>
               <TableCell>{user.firstName}</TableCell>
               <TableCell>{user.lastName}</TableCell>
+              <TableCell>{user.gamerName}</TableCell>
               <TableCell className="text-right">
                 {user.createdAt?.toLocaleDateString() ?? "-"}
               </TableCell>

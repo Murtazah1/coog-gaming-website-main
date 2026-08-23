@@ -41,7 +41,7 @@ export default function TeamMembers({
 
     const memberLabel =
       fullName ||
-      member.discordName ||
+      member.user.gamerName ||
       "this member";
 
     if (
@@ -112,7 +112,7 @@ export default function TeamMembers({
                   }
                   alt={
                     fullName ||
-                    member.discordName ||
+                    member.user.gamerName ||
                     "Member"
                   }
                 />
@@ -126,14 +126,14 @@ export default function TeamMembers({
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">
                   {fullName ||
-                    member.discordName ||
+                    member.user.gamerName ||
                     "Unnamed Member"}
                 </p>
 
-                {member.discordName &&
+                {member.user.gamerName &&
                   fullName && (
                     <p className="truncate text-xs text-muted-foreground">
-                      {member.discordName}
+                      {member.user.gamerName}
                     </p>
                   )}
               </div>
@@ -151,7 +151,7 @@ export default function TeamMembers({
                 }
                 aria-label={`Remove ${
                   fullName ||
-                  member.discordName ||
+                  member.user.gamerName ||
                   "member"
                 } from team`}
               >

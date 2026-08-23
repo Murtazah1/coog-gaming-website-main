@@ -1,7 +1,10 @@
 import "server-only";
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { eq } from "drizzle-orm";
 
+import { db } from "@/db";
+import { admins, members } from "@/db/schema";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthenticatedUser = {
@@ -30,6 +33,22 @@ export async function requireUser() {
 
   if (!user) {
     throw new Error("You must be signed in to perform this action.");
+  }
+
+  return user;
+}
+
+export async function requireAdmin() {
+  const user = await requireUser();
+  const [admin] = await db
+    .select({ id: admins.id })
+    .from(admins)
+    .innerJoin(members, eq(admins.memberId, members.id))
+    .where(eq(members.userId, user.id))
+    .limit(1);
+
+  if (!admin) {
+    throw new Error("You must be an admin to perform this action.");
   }
 
   return user;

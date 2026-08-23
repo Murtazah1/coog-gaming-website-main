@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { ChevronDown, CircleUserRound, Settings } from "lucide-react";
+import {
+  BadgeCheck,
+  ChevronDown,
+  CircleUserRound,
+  Settings,
+} from "lucide-react";
 
 import { SignOutButton } from "@/components/site-components/login-components/sign-out-button";
 import {
@@ -25,6 +30,7 @@ import {
 
 export type AccountNavData = {
   isSignedIn: boolean;
+  isMember: boolean;
   avatarUrl: string | null;
   firstName: string | null;
   lastName: string | null;
@@ -36,6 +42,7 @@ type AccountNavLinkProps = AccountNavData & {
 
 export function AccountNavLink({
   isSignedIn,
+  isMember,
   avatarUrl,
   firstName,
   lastName,
@@ -105,6 +112,17 @@ export function AccountNavLink({
             Account settings
           </Link>
         </DropdownMenuItem>
+        {isMember ? (
+          <DropdownMenuItem
+            asChild
+            className="cursor-pointer py-2.5 text-base focus:bg-red-950/70 focus:text-white"
+          >
+            <Link href="/membership">
+              <BadgeCheck aria-hidden="true" />
+              View membership
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuSeparator className="bg-white/10" />
         <SignOutButton appearance="menu-item" />
       </DropdownMenuContent>

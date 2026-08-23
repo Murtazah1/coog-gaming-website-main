@@ -36,8 +36,11 @@ export const admins = pgTable("admins", {
 
 export type Admin = typeof admins.$inferSelect;
 
-export type AdminMember = Pick<Member, "id" | "discordName"> &
-  Pick<User, "email" | "firstName" | "lastName" | "avatarUrl">;
+export type AdminMember = Pick<Member, "id"> &
+  Pick<
+    User,
+    "email" | "firstName" | "lastName" | "gamerName" | "avatarUrl"
+  >;
 
 export function getAdminRoleLabel(role: number) {
   return (

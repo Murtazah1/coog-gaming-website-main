@@ -37,6 +37,7 @@ const allowedAvatarTypes = new Set([
 type ProfileInformationCardProps = {
   firstName: string | null;
   lastName: string | null;
+  gamerName: string | null;
   avatarUrl: string | null;
   createdAt: string;
 };
@@ -44,6 +45,7 @@ type ProfileInformationCardProps = {
 export function ProfileInformationCard({
   firstName: initialFirstName,
   lastName: initialLastName,
+  gamerName: initialGamerName,
   avatarUrl: initialAvatarUrl,
   createdAt,
 }: ProfileInformationCardProps) {
@@ -52,6 +54,7 @@ export function ProfileInformationCard({
   const profileFormRef = useRef<HTMLFormElement>(null);
   const [firstName, setFirstName] = useState(initialFirstName ?? "");
   const [lastName, setLastName] = useState(initialLastName ?? "");
+  const [gamerName, setGamerName] = useState(initialGamerName ?? "");
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
@@ -62,8 +65,9 @@ export function ProfileInformationCard({
   useEffect(() => {
     setFirstName(initialFirstName ?? "");
     setLastName(initialLastName ?? "");
+    setGamerName(initialGamerName ?? "");
     profileFormRef.current?.reset();
-  }, [initialFirstName, initialLastName]);
+  }, [initialFirstName, initialLastName, initialGamerName]);
 
   useEffect(() => {
     if (!avatarFile) {
@@ -167,7 +171,7 @@ export function ProfileInformationCard({
     setIsSaving(true);
 
     try {
-      const result = await updateOwnProfile({ firstName, lastName });
+      const result = await updateOwnProfile({ firstName, lastName, gamerName });
 
       if (result.error) {
         toast.error(result.error);
@@ -270,6 +274,16 @@ export function ProfileInformationCard({
                 onChange={(event) => setLastName(event.target.value)}
               />
             </div>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="gamer-name">Gamer Name</Label>
+            <Input
+              id="gamer-name"
+              autoComplete="off"
+              value={gamerName}
+              onChange={(event) => setGamerName(event.target.value)}
+              placeholder="Your in-game or community name"
+            />
           </div>
           <p className="text-sm leading-6 text-zinc-300">
             Account created {new Date(createdAt).toLocaleDateString()}.

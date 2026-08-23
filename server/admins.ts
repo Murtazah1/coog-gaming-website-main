@@ -46,7 +46,7 @@ export async function getAdmins(search?: string) {
         admin: admins,
         member: {
           id: members.id,
-          discordName: members.discordName,
+          gamerName: users.gamerName,
           email: users.email,
           firstName: users.firstName,
           lastName: users.lastName,
@@ -62,6 +62,7 @@ export async function getAdmins(search?: string) {
               ilike(users.email, `%${cleanSearch}%`),
               ilike(users.firstName, `%${cleanSearch}%`),
               ilike(users.lastName, `%${cleanSearch}%`),
+              ilike(users.gamerName, `%${cleanSearch}%`),
             )
           : undefined,
       )
@@ -79,6 +80,7 @@ export async function getAdminByID(id: string) {
 
         member: {
           id: members.id,
+          gamerName: users.gamerName,
           email: users.email,
           firstName: users.firstName,
           lastName: users.lastName,
@@ -101,7 +103,7 @@ export async function getNonAdmins() {
     return db
       .select({
         id: members.id,
-        discordName: members.discordName,
+        gamerName: users.gamerName,
         email: users.email,
         firstName: users.firstName,
         lastName: users.lastName,

@@ -54,7 +54,7 @@ function getMemberLabel(member: AdminMember) {
     .filter(Boolean)
     .join(" ");
 
-  return fullName ? `${fullName} - ${member.discordName}` : member.email;
+  return fullName ? `${fullName} - ${member.gamerName}` : member.email;
 }
 
 export default function AdminForm(props: AdminFormProps) {

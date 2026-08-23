@@ -168,19 +168,22 @@ export default function AddTeamMember({
 
                   {availableMembers.map(
                     (member) => {
-                      const fullName = [
+                      const memberLabel = [
                         member.user.firstName,
+                        member.user.gamerName
+                          ? `"${member.user.gamerName}"`
+                          : null,
                         member.user.lastName,
                       ]
                         .filter(Boolean)
-                        .join(" ");
+                        .join(" ") || "Unnamed Member";
 
                       return (
                         <option
                           key={member.id}
                           value={member.id}
                         >
-                          {member.user.firstName} "{member.discordName}" {member.user.lastName}
+                          {memberLabel}
                         </option>
                       );
                     },

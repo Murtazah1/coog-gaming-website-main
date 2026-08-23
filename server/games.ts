@@ -110,7 +110,7 @@ export async function deleteGame(id: string) {
     }
 
     if (game.imageUrl) {
-      const { error } = await deleteGameImage(game.imageUrl);
+      await deleteGameImage(game.imageUrl);
     }
 
     return deleteGame;
@@ -139,7 +139,6 @@ export async function getGamesWithTeamsAndMembers() {
               columns: {
                 id: true,
                 userId: true,
-                discordName: true,
               },
 
               with: {
@@ -147,6 +146,7 @@ export async function getGamesWithTeamsAndMembers() {
                   columns: {
                     firstName: true,
                     lastName: true,
+                    gamerName: true,
                     avatarUrl: true,
                   },
                 },

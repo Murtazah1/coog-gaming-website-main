@@ -111,7 +111,10 @@ export function NavbarClient({ account }: NavbarClientProps) {
 
           <AccountNavLink
             {...account}
-            isActive={pathname.startsWith("/profile")}
+            isActive={
+              pathname.startsWith("/profile") ||
+              pathname.startsWith("/membership")
+            }
           />
         </div>
       </div>

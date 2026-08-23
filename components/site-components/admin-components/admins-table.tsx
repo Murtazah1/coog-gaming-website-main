@@ -76,7 +76,7 @@ export default async function AdminsTable({
         />
       </div>
 
-      <SearchInput placeholder="Search by name or email" />
+      <SearchInput placeholder="Search by name, gamer name, or email" />
 
       <Table>
         <TableCaption>
@@ -152,7 +152,7 @@ export default async function AdminsTable({
                 </TableCell>
 
                 <TableCell className="font-medium">
-                  {member.discordName}
+                  {member.gamerName}
                 </TableCell>
 
                 <TableCell>

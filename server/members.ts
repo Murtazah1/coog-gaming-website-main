@@ -12,6 +12,7 @@ import {
   getTableColumns,
 } from "drizzle-orm";
 import safeAction from "./safe-action";
+import { requireAdmin, requireUser } from "./auth";
 import * as z from "zod";
 
 // this is the data required for making a user into the DB
@@ -20,12 +21,11 @@ type CreateMemberInput = {
   userId: string;
   planType: Member["planType"];
   currentPeriodEnd: Member["currentPeriodEnd"];
-  discordName?: Member["discordName"];
 };
 
 // and these are all the fields we would update
 type UpdateMemberInput = Partial<
-  Pick<Member, "planType" | "currentPeriodEnd" | "discordName">
+  Pick<Member, "planType" | "currentPeriodEnd">
 >;
 
 // input validation
@@ -40,13 +40,6 @@ const createMemberSchema = z.object({
     .date("Enter a valid membership expiration date")
     .nullable()
     .optional(),
-
-  discordName: z
-    .string()
-    .trim()
-    .min(1, "Gamer Name cannot be empty")
-    .nullable()
-    .optional(),
 });
 
 const updateMemberSchema = z
@@ -57,21 +50,35 @@ const updateMemberSchema = z
       .date("Enter a valid membership expiration date")
       .nullable()
       .optional(),
-    discordName: z
-      .string()
-      .trim()
-      .min(1, "Gamer Name cannot be empty")
-      .nullable()
-      .optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "at least one field needs to be provided",
   });
 
+export async function getOwnMembership() {
+  return safeAction(async () => {
+    const authenticatedUser = await requireUser();
+
+    const membership = await db.query.members.findFirst({
+      where: { userId: authenticatedUser.id },
+      columns: {
+        id: true,
+        planType: true,
+        currentPeriodEnd: true,
+        createdAt: true,
+      },
+    });
+
+    return membership ?? null;
+  });
+}
+
 export async function getMembers(search?: string) {
   const cleanSearch = search?.trim();
-  return safeAction(() =>
-    db
+  return safeAction(async () => {
+    await requireAdmin();
+
+    return db
       .select({
         member: members,
         user: {
@@ -79,6 +86,7 @@ export async function getMembers(search?: string) {
           email: users.email,
           firstName: users.firstName,
           lastName: users.lastName,
+          gamerName: users.gamerName,
           avatarUrl: users.avatarUrl,
         },
       })
@@ -90,16 +98,18 @@ export async function getMembers(search?: string) {
               ilike(users.email, `%${cleanSearch}%`),
               ilike(users.firstName, `%${cleanSearch}%`),
               ilike(users.lastName, `%${cleanSearch}%`),
-              ilike(members.discordName, `%${cleanSearch}%`),
+              ilike(users.gamerName, `%${cleanSearch}%`),
             )
           : undefined,
       )
-      .orderBy(desc(members.createdAt)),
-  );
+      .orderBy(desc(members.createdAt));
+  });
 }
 
 export async function getMemberByID(id: string) {
   return safeAction(async () => {
+    await requireAdmin();
+
     // we need to have the memberIdSchema to make sure that the id we get is a uuid
     const memberId = memberIdSchema.parse(id);
     // due to users being a different table and me wanting to import user information in the table as well
@@ -110,6 +120,7 @@ export async function getMemberByID(id: string) {
         email: users.email,
         firstName: users.firstName,
         lastName: users.lastName,
+        gamerName: users.gamerName,
         avatarUrl: users.avatarUrl,
       })
       .from(members)
@@ -125,6 +136,8 @@ export async function getMemberByID(id: string) {
 
 export async function getNonMembers() {
   return safeAction(async () => {
+    await requireAdmin();
+
     const res = await db
       .select({
         id: users.id,
@@ -142,6 +155,8 @@ export async function getNonMembers() {
 
 export async function createMember(input: CreateMemberInput) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const cleanInput = createMemberSchema.parse(input);
 
     // make sure the user exists
@@ -174,7 +189,6 @@ export async function createMember(input: CreateMemberInput) {
         userId: cleanInput.userId,
         planType: cleanInput.planType,
         currentPeriodEnd: cleanInput.currentPeriodEnd ?? null,
-        discordName: cleanInput.discordName?.trim() || null
       })
       .returning();
 
@@ -188,21 +202,14 @@ export async function createMember(input: CreateMemberInput) {
 
 export async function updateMember(id: string, input: UpdateMemberInput) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const memberId = memberIdSchema.parse(id);
     const cleanInput = updateMemberSchema.parse(input);
 
-    const updateData: UpdateMemberInput = {
-      ...cleanInput,
-    };
-
-    // if the user clears the discord name
-    if (cleanInput.discordName !== undefined) {
-      updateData.discordName = cleanInput.discordName?.trim() || null;
-    }
-
     const [updatedMember] = await db
       .update(members)
-      .set(updateData)
+      .set(cleanInput)
       .where(eq(members.id, memberId))
       .returning();
 
@@ -218,6 +225,8 @@ export async function updateMember(id: string, input: UpdateMemberInput) {
 
 export async function deleteMember(id: string) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const memberId = memberIdSchema.parse(id);
 
     const [deletedMember] = await db
@@ -232,4 +241,3 @@ export async function deleteMember(id: string) {
     return deletedMember;
   });
 }
-
