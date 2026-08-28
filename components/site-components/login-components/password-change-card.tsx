@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateUserPassword } from "@/server/users";
+import { updateUserPassword } from "@/server/nonAdminUsers";
 
 export function PasswordChangeCard() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -47,12 +47,13 @@ export function PasswordChangeCard() {
   };
 
   return (
-    <Card className="border-red-500/25 bg-black/90 text-white shadow-xl backdrop-blur-xl lg:col-span-2">
+    <Card className="border-red-500/25 bg-black/90 font-sans text-base font-bold text-white shadow-xl backdrop-blur-xl lg:col-span-2 [&_button]:text-base [&_button]:font-bold [&_input]:text-base [&_label]:text-base [&_label]:font-bold">
       <CardHeader>
-        <CardTitle className="text-xl">Change password</CardTitle>
-        <CardDescription className="text-base leading-7 text-zinc-200">
-          Enter your current password and choose a new password of at least
-          eight characters.
+        <CardTitle className="font-heading text-xl font-bold">
+          Change password
+        </CardTitle>
+        <CardDescription className="text-base leading-8 text-zinc-200">
+          Minimum 8 characters
         </CardDescription>
       </CardHeader>
       <CardContent>

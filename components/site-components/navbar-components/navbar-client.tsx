@@ -64,7 +64,7 @@ export function NavbarClient({ account }: NavbarClientProps) {
           <span className="hidden min-w-0 items-center gap-3 md:flex">
             <span className="h-8 w-px bg-gradient-to-b from-transparent via-red-500/80 to-transparent" />
             <span className="flex flex-col leading-none">
-              <span className="font-heading text-base tracking-[0.16em] text-white transition-colors group-hover:text-red-100 lg:text-lg">
+              <span className="font-heading text-lg tracking-[0.16em] text-white transition-colors group-hover:text-red-100 lg:text-xl">
                 COOG GAMING
               </span>
               <span className="mt-1.5 flex items-center gap-1.5 text-[0.65rem] uppercase tracking-[0.28em] text-red-400">

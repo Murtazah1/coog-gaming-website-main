@@ -27,8 +27,8 @@ export default function GameCard({ game }: GameCardProps) {
         </div>
 
         <div className="min-w-0 flex-1 text-left">
-          <h2 className="truncate text-xl font-semibold">{game.name}</h2>
-          <p className="mt-1 text-sm font-normal text-gray-100">
+          <h2 className="truncate text-xl font-bold">{game.name}</h2>
+          <p className="mt-1 text-sm font-bold text-gray-100">
             {game.teams.length} {game.teams.length === 1 ? "team" : "teams"}
           </p>
         </div>
@@ -40,7 +40,7 @@ export default function GameCard({ game }: GameCardProps) {
         {game.teams.length > 0 ? (
           game.teams.map((team) => <TeamCard key={team.id} team={team} />)
         ) : (
-          <p className="text-sm text-gray-100">
+          <p className="text-sm font-bold text-gray-100">
             No teams have been announced for this game.
           </p>
         )}

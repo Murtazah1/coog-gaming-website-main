@@ -28,7 +28,7 @@ function getMemberInitials(member: TeamPageMember) {
 export default function TeamRoster({ members }: TeamRosterProps) {
   if (members.length === 0) {
     return (
-      <p className="px-1 py-2 text-sm text-gray-200">
+      <p className="px-1 py-2 text-sm font-bold text-gray-200">
         No members have been announced for this team.
       </p>
     );
@@ -49,12 +49,12 @@ export default function TeamRoster({ members }: TeamRosterProps) {
                 src={member.user.avatarUrl ?? undefined}
                 alt={memberName}
               />
-              <AvatarFallback className="bg-red-950 text-sm text-red-100">
+              <AvatarFallback className="bg-red-950 text-sm font-bold text-red-100">
                 {getMemberInitials(member)}
               </AvatarFallback>
             </Avatar>
 
-            <p className="min-w-0 truncate text-sm font-medium text-gray-100">
+            <p className="min-w-0 truncate text-sm font-bold text-gray-100">
               {memberName}
             </p>
           </div>

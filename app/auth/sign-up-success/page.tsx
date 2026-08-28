@@ -6,7 +6,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ avatar?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const avatarNeedsRetry = params.avatar === "retry";
+
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-sm">
@@ -24,6 +31,12 @@ export default function Page() {
                 confirm your account. The confirmation link will sign you in
                 and return you to the site.
               </p>
+              {avatarNeedsRetry && (
+                <p className="mt-4 text-sm text-amber-600 dark:text-amber-400">
+                  Your profile picture could not be saved. You can upload it
+                  from your profile after confirming your account.
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>

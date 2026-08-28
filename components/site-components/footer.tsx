@@ -25,7 +25,7 @@ const communityLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-red-500/25 bg-black/95 text-zinc-300 shadow-[0_-14px_45px_rgba(0,0,0,0.5)]">
+    <footer className="relative overflow-hidden border-t border-red-500/25 bg-black/95 font-bold text-white shadow-[0_-14px_45px_rgba(0,0,0,0.5)]">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_20%,rgba(239,68,68,0.16),transparent_30%),radial-gradient(circle_at_88%_90%,rgba(127,29,29,0.16),transparent_28%),linear-gradient(105deg,transparent_42%,rgba(127,29,29,0.07)_50%,transparent_58%)]"
@@ -67,11 +67,11 @@ export default function Footer() {
               </div>
             </div>
 
-            <p className="mt-6 max-w-md text-sm leading-7 text-zinc-200">
+            <p className="mt-6 max-w-md text-sm leading-7 text-white">
               The gaming and esports community at the University of Houston.
             </p>
 
-            <div className="mt-6 inline-flex items-center gap-2 rounded-md border border-red-500/20 bg-red-950/40 px-3 py-2 text-xs uppercase tracking-[0.22em] text-zinc-200 shadow-[inset_0_1px_0_rgba(248,113,113,0.08)]">
+            <div className="mt-6 inline-flex items-center gap-2 rounded-md border border-red-500/20 bg-red-950/40 px-3 py-2 text-xs uppercase tracking-[0.22em] text-white shadow-[inset_0_1px_0_rgba(248,113,113,0.08)]">
               <Radio
                 className="h-3.5 w-3.5 animate-pulse text-red-400"
                 aria-hidden="true"
@@ -85,7 +85,7 @@ export default function Footer() {
               <span className="h-px w-7 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
               <h2
                 id="community-heading"
-                className="text-xs uppercase tracking-[0.24em] text-white"
+                className="text-base uppercase tracking-[0.24em] text-white"
               >
                 Community
               </h2>
@@ -98,7 +98,7 @@ export default function Footer() {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group/link relative flex items-center justify-between overflow-hidden rounded-md border border-transparent px-3 py-2 text-sm text-zinc-200 outline-none transition duration-300 hover:border-white/10 hover:bg-white/[0.045] hover:text-white focus-visible:border-red-500/50 focus-visible:ring-2 focus-visible:ring-red-400"
+                  className="group/link relative flex items-center justify-between overflow-hidden rounded-md border border-transparent px-3 py-2 text-sm text-white outline-none transition duration-300 hover:border-white/10 hover:bg-white/[0.045] focus-visible:border-red-500/50 focus-visible:ring-2 focus-visible:ring-red-400"
                 >
                   <span
                     aria-hidden="true"
@@ -107,7 +107,7 @@ export default function Footer() {
                   <span>{link.label}</span>
                   <ChevronRight
                     aria-hidden="true"
-                    className="h-3.5 w-3.5 text-zinc-600 transition duration-300 group-hover/link:translate-x-0.5 group-hover/link:text-red-400"
+                    className="h-3.5 w-3.5 text-white transition duration-300 group-hover/link:translate-x-0.5 group-hover/link:text-red-400"
                   />
                 </a>
               ))}
@@ -122,7 +122,7 @@ export default function Footer() {
               <span className="h-px w-7 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
               <h2
                 id="arena-heading"
-                className="text-xs uppercase tracking-[0.24em] text-white"
+                className="text-base uppercase tracking-[0.24em] text-white"
               >
                 Visit the arena
               </h2>
@@ -153,7 +153,7 @@ export default function Footer() {
                     aria-hidden="true"
                   />
                 </span>
-                <span className="mt-2 block text-xs leading-6 text-zinc-300 transition-colors group-hover:text-zinc-100">
+                <span className="mt-2 block text-xs leading-6 text-white">
                   Hours, location, and arena information
                 </span>
               </span>
@@ -161,14 +161,14 @@ export default function Footer() {
           </section>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs uppercase tracking-[0.13em] text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs uppercase tracking-[0.13em] text-white sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; 2026 Coog Gaming. All rights reserved.</p>
 
           <a
             href="https://linktr.ee/coogesports"
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex w-fit items-center gap-2 text-zinc-300 outline-none transition-colors hover:text-red-300 focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-red-400"
+            className="group flex w-fit items-center gap-2 text-white outline-none transition-colors hover:text-red-300 focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-red-400"
           >
             All Coog Esports Links
             <ExternalLink

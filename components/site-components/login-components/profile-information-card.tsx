@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -24,7 +23,7 @@ import {
   removeOwnAvatar,
   updateOwnAvatar,
   updateOwnProfile,
-} from "@/server/users";
+} from "@/server/nonAdminUsers";
 
 const MAX_AVATAR_SIZE = 1024 * 1024;
 const allowedAvatarTypes = new Set([
@@ -186,12 +185,11 @@ export function ProfileInformationCard({
   };
 
   return (
-    <Card className="border-red-500/25 bg-black/90 text-white shadow-xl backdrop-blur-xl">
+    <Card className="border-red-500/25 bg-black/90 font-sans text-base font-bold text-white shadow-xl backdrop-blur-xl [&_button]:text-base [&_button]:font-bold [&_input]:text-base [&_label]:text-base [&_label]:font-bold">
       <CardHeader>
-        <CardTitle className="text-xl">Profile information</CardTitle>
-        <CardDescription className="text-base leading-7 text-zinc-200">
-          These fields are stored in your public user profile.
-        </CardDescription>
+        <CardTitle className="font-heading text-xl font-bold">
+          Profile information
+        </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-7">
         <div className="grid gap-4 border-b border-white/10 pb-7">
@@ -220,7 +218,7 @@ export function ProfileInformationCard({
               />
               <p
                 id="profile-picture-help"
-                className="text-sm leading-6 text-zinc-300"
+                className="text-base leading-7 text-zinc-300"
               >
                 PNG, JPG, WEBP, or GIF. Maximum file size: 1MB.
               </p>
@@ -285,7 +283,7 @@ export function ProfileInformationCard({
               placeholder="Your in-game or community name"
             />
           </div>
-          <p className="text-sm leading-6 text-zinc-300">
+          <p className="text-base leading-7 text-zinc-300">
             Account created {new Date(createdAt).toLocaleDateString()}.
           </p>
           <Button type="submit" disabled={isSaving} className="w-fit">

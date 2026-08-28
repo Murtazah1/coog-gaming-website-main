@@ -24,13 +24,13 @@ export function AdminNavbar() {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-[4.5rem] z-30 h-[calc(100vh-4.5rem)] w-16 shrink-0 border-r border-red-500/25 bg-black/95 text-zinc-100 shadow-[12px_0_35px_rgba(0,0,0,0.28)] backdrop-blur-xl lg:w-64">
+    <aside className="sticky top-[4.5rem] z-30 h-[calc(100vh-4.5rem)] w-16 shrink-0 border-r border-red-500/25 bg-black/95 font-sans font-bold text-white shadow-[12px_0_35px_rgba(0,0,0,0.28)] backdrop-blur-xl lg:w-64">
       <div className="flex h-full flex-col px-2 py-5 lg:px-4">
         <div className="hidden border-b border-white/10 px-3 pb-5 lg:block">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-red-400">
+          <p className="text-sm font-bold uppercase tracking-[0.28em] text-red-400">
             Management
           </p>
-          <h2 className="mt-2 text-lg font-semibold tracking-wide text-white">
+          <h2 className="mt-2 font-sans text-xl font-bold tracking-wide text-white">
             Admin Console
           </h2>
         </div>
@@ -49,10 +49,10 @@ export function AdminNavbar() {
                 aria-current={isActive ? "page" : undefined}
                 title={label}
                 className={cn(
-                  "group relative flex h-11 items-center justify-center gap-3 overflow-hidden rounded-lg border px-3 text-sm font-medium outline-none transition duration-200 focus-visible:ring-2 focus-visible:ring-red-400 lg:justify-start",
+                  "group relative flex h-12 items-center justify-center gap-3 overflow-hidden rounded-lg border px-3 font-sans text-lg font-bold text-white outline-none transition duration-200 focus-visible:ring-2 focus-visible:ring-red-400 lg:justify-start",
                   isActive
                     ? "border-red-500/45 bg-gradient-to-r from-red-900/70 to-red-950/35 text-white shadow-[inset_0_1px_0_rgba(248,113,113,0.16),0_0_18px_rgba(220,38,38,0.12)]"
-                    : "border-transparent text-zinc-300 hover:border-white/10 hover:bg-white/[0.05] hover:text-white",
+                    : "border-transparent hover:border-white/10 hover:bg-white/[0.05]",
                 )}
               >
                 <span
@@ -67,8 +67,8 @@ export function AdminNavbar() {
                 <Icon
                   aria-hidden="true"
                   className={cn(
-                    "size-5 shrink-0",
-                    isActive ? "text-red-300" : "text-zinc-400",
+                    "size-6 shrink-0",
+                    isActive ? "text-red-300" : "text-white",
                   )}
                 />
                 <span className="hidden lg:inline">{label}</span>

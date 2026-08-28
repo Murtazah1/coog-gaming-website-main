@@ -69,7 +69,7 @@ export default async function MembershipPage() {
   ];
 
   return (
-    <section className="min-h-[calc(100vh-4.5rem)] bg-[url('/uh-site-background.png')] bg-cover bg-fixed px-4 py-12 text-white sm:px-6 lg:px-8">
+    <section className="min-h-[calc(100vh-4.5rem)] bg-black/25 bg-[url('/uh-site-background.png')] bg-cover bg-fixed bg-blend-multiply px-4 py-12 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <p className="text-xs uppercase tracking-[0.25em] text-red-400">
           Coog Gaming member
@@ -77,9 +77,7 @@ export default async function MembershipPage() {
         <h1 className="mt-2 font-heading text-3xl tracking-[0.08em] sm:text-4xl">
           Your membership
         </h1>
-        <p className="mt-3 max-w-2xl text-base leading-7 text-zinc-200">
-          Review the plan and dates associated with your membership.
-        </p>
+       
 
         <Card className="mt-8 border-red-500/25 bg-black/80 text-white shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl">
           <CardHeader>

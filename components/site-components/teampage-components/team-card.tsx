@@ -15,8 +15,8 @@ export default function TeamCard({ team }: TeamCardProps) {
         <Users className="h-4 w-4 shrink-0 text-gray-300" />
 
         <div className="min-w-0 flex-1 text-left">
-          <p className="truncate font-medium">{team.name}</p>
-          <p className="mt-0.5 text-xs font-normal text-gray-200">
+          <p className="truncate font-bold">{team.name}</p>
+          <p className="mt-0.5 text-sm font-bold text-gray-200">
             {team.members.length}{" "}
             {team.members.length === 1 ? "member" : "members"}
           </p>

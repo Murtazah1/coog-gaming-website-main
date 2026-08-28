@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateOwnEmail } from "@/server/users";
+import { updateOwnEmail } from "@/server/nonAdminUsers";
 
 type SignInEmailCardProps = {
   authEmail: string;
@@ -55,10 +55,12 @@ export function SignInEmailCard({
   };
 
   return (
-    <Card className="border-red-500/25 bg-black/90 text-white shadow-xl backdrop-blur-xl">
+    <Card className="border-red-500/25 bg-black/90 font-sans text-base font-bold text-white shadow-xl backdrop-blur-xl [&_button]:text-base [&_button]:font-bold [&_input]:text-base [&_label]:text-base [&_label]:font-bold">
       <CardHeader>
-        <CardTitle className="text-xl">Sign-in email</CardTitle>
-        <CardDescription className="text-base leading-7 text-zinc-200">
+        <CardTitle className="font-heading text-xl font-bold">
+          Sign-in email
+        </CardTitle>
+        <CardDescription className="text-base leading-8 text-zinc-200">
           Secure email changes must be confirmed from both the current and new
           inboxes.
         </CardDescription>
@@ -66,7 +68,7 @@ export function SignInEmailCard({
       <CardContent>
         <form className="grid gap-5" onSubmit={saveEmail}>
           <div className="grid gap-2">
-            <Label htmlFor="email">New email</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
@@ -76,7 +78,7 @@ export function SignInEmailCard({
               onChange={(event) => setEmail(event.target.value)}
             />
           </div>
-          <div className="rounded-lg border border-white/15 bg-black/55 p-4 text-sm leading-6 text-zinc-200">
+          <div className="rounded-lg border border-white/15 bg-black/55 p-4 text-base leading-7 text-zinc-200">
             <p>Current sign-in email: {authEmail}</p>
             <p>Database email: {mirroredEmail}</p>
             {pendingEmail && (

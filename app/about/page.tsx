@@ -37,7 +37,7 @@ export default async function Page() {
   const { data: admins, error } = await getPublicAdmins();
 
   return (
-    <main className="min-h-screen bg-[url('/uh-site-background.png')] bg-cover bg-center bg-fixed px-4 py-16 text-white sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-black/25 bg-[url('/uh-site-background.png')] bg-cover bg-center bg-fixed bg-blend-multiply px-4 py-16 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-10">
         <section className="rounded-2xl border border-red-500/30 bg-gradient-to-br from-gray-950/95 via-red-950/90 to-gray-900/90 px-6 py-10 text-center shadow-2xl backdrop-blur-lg sm:px-10">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-red-300">

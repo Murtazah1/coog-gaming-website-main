@@ -11,10 +11,10 @@ type NavbarLinkProps = {
 
 export function getNavbarItemClassName(isActive: boolean) {
   return cn(
-    "group/link relative flex h-10 items-center justify-center gap-2 overflow-hidden rounded-lg border px-3 text-sm uppercase tracking-[0.16em] outline-none transition duration-300 focus-visible:ring-2 focus-visible:ring-red-400 sm:min-w-24 sm:px-4",
+    "group/link relative flex h-10 items-center justify-center gap-2 overflow-hidden rounded-lg border px-3 font-sans text-base font-bold uppercase tracking-[0.16em] text-white outline-none transition duration-300 focus-visible:ring-2 focus-visible:ring-red-400 sm:min-w-24 sm:px-4",
     isActive
       ? "border-red-500/45 bg-gradient-to-b from-red-900/60 to-red-950/35 text-white shadow-[0_0_18px_rgba(220,38,38,0.18),inset_0_1px_0_rgba(248,113,113,0.18)]"
-      : "border-transparent text-zinc-200 hover:border-white/10 hover:bg-white/[0.045] hover:text-white",
+      : "border-transparent hover:border-white/10 hover:bg-white/[0.045]",
   );
 }
 

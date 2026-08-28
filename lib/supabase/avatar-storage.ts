@@ -12,7 +12,7 @@ const avatarExtensions = new Map([
   ["image/webp", "webp"],
 ]);
 
-export async function uploadAvatarFile(file: File, ownerId?: string) {
+export function validateAvatarFile(file: File) {
   if (file.size === 0) {
     throw new Error("Choose an image to upload.");
   }
@@ -26,6 +26,12 @@ export async function uploadAvatarFile(file: File, ownerId?: string) {
   if (file.size > MAX_AVATAR_SIZE) {
     throw new Error("Avatar must be under 1MB.");
   }
+
+  return extension;
+}
+
+export async function uploadAvatarFile(file: File, ownerId?: string) {
+  const extension = validateAvatarFile(file);
 
   if (ownerId && !/^[a-zA-Z0-9_-]+$/.test(ownerId)) {
     throw new Error("Invalid avatar owner.");
