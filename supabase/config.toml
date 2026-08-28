@@ -1,6 +1,0 @@
-project_id = "coog-gaming-website-main"
-
-[functions.storage-reconcile]
-enabled = true
-verify_jwt = false
-entrypoint = "./functions/storage-reconcile/index.ts"

@@ -44,7 +44,7 @@ One file per domain (`events.ts`, `users.ts`, `members.ts`, `admins.ts`, `games.
 - Every exported function is wrapped in `safeAction()` (`server/safe-action.ts`) which returns `ActionResult<T> = { data: T | null; error: string | null }` — never throws. Callers check `result.error`.
 - Inputs are validated inside the action with zod schemas (validation is duplicated in the server file because server actions are callable from anywhere).
 - `server/users.ts` also creates/deletes Supabase Auth users via `lib/supabase/admin.ts` (service-role client) — creating a user means both inserting into the `users` table and calling Supabase Admin API.
-- Managed image uploads live in `lib/supabase/image-storage.ts`; domain actions attach them to users/games, while `server/storage-cleanup.ts` durably queues failed or superseded objects.
+- `server/storage.ts` manages avatar and game-image uploads/deletes against Supabase Storage.
 
 ### Calendar State (`lib/store.ts`)
 

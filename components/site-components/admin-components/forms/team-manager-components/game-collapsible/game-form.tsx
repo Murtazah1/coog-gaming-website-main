@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { createGame, updateGame } from "@/server/games";
+import { uploadGameImage } from "@/server/storage";
 
 import type { DashboardGame } from "../games-dashboard";
 
@@ -178,14 +179,23 @@ export default function GameForm({
        * REMOVE:
        * imageUrl becomes null.
        */
+      let imageUrl = removeImage ? null : (game?.imageUrl ?? null);
       const file = fileInputRef.current?.files?.[0];
-      const payload = new FormData();
-      payload.set("name", values.name);
-      payload.set("removeImage", String(removeImage));
 
       if (file) {
-        payload.set("image", file);
+        const uploadData = new FormData();
+        uploadData.set("file", file);
+        const upload = await uploadGameImage(uploadData);
+
+        if (upload.error) {
+          toast.error(upload.error);
+          return;
+        }
+
+        imageUrl = upload.url;
       }
+
+      const payload = { name: values.name, imageUrl };
 
       // ========================================
       // CREATE OR UPDATE

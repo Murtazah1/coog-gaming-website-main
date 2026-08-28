@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import type { User } from "@/db/schema/users";
+import { uploadAvatar } from "@/server/storage";
 import { createUser, updateUser } from "@/server/users";
 import Image from "next/image";
 import { CircleX } from "lucide-react";
@@ -142,25 +143,31 @@ export default function UserForm({ mode, user, onSuccess, onCancel }: UserFormPr
     // setUploading to true as we are uploading information
     setUploading(true);
     try {
+      let avatarUrl = removeAvatar ? null : (user?.avatarUrl ?? null);
       const file = fileInputRef.current?.files?.[0];
-      const payload = new FormData();
-      payload.set("email", values.email);
-      payload.set("firstName", values.firstName);
-      payload.set("lastName", values.lastName);
-      payload.set("gamerName", values.gamerName?.trim() || "");
-      payload.set("removeAvatar", String(removeAvatar));
 
       if (file) {
-        payload.set("avatar", file);
+        const uploadData = new FormData();
+        uploadData.set("file", file);
+        const upload = await uploadAvatar(uploadData);
+
+        if (upload.error) return toast.error(upload.error);
+        avatarUrl = upload.url;
       }
 
-      // if we are creating a user then
-      if (isCreate) {
-        payload.set("password", (values as CreateValues).password);
-      }
+      const payload = {
+        email: values.email,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        gamerName: values.gamerName?.trim() || null,
+        avatarUrl,
+      };
 
       const res = isCreate
-        ? await createUser(payload)
+        ? await createUser({
+            ...payload,
+            password: (values as CreateValues).password,
+          })
         : await updateUser(user.id, payload);
 
       if (res?.error) return toast.error(res.error);

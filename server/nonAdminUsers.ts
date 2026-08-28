@@ -8,6 +8,7 @@ import * as z from "zod";
 import { db } from "@/db/index";
 import { users } from "@/db/schema/users";
 import {
+  deleteAvatarFile,
   uploadAvatarFile,
   validateAvatarFile,
 } from "@/lib/supabase/avatar-storage";
@@ -16,7 +17,6 @@ import { createClient } from "@/lib/supabase/server";
 import { publicSignUpSchema } from "@/lib/validation/users";
 import { requireUser, verifyCurrentPassword } from "./auth";
 import safeAction from "./safe-action";
-import { deleteOrQueueManagedImage } from "./storage-cleanup";
 import { getUserById } from "./users";
 
 const changePasswordSchema = z
@@ -118,19 +118,14 @@ export async function signUpUser(formData: FormData) {
     let avatarWarning: string | null = null;
 
     if (avatar) {
-      let uploadedAvatar:
-        | Awaited<ReturnType<typeof uploadAvatarFile>>
-        | null = null;
+      let uploadedUrl: string | null = null;
 
       try {
-        uploadedAvatar = await uploadAvatarFile(avatar, authUser.id);
+        uploadedUrl = await uploadAvatarFile(avatar, authUser.id);
 
         const [updatedUser] = await db
           .update(users)
-          .set({
-            avatarUrl: uploadedAvatar.publicUrl,
-            avatarObjectName: uploadedAvatar.objectName,
-          })
+          .set({ avatarUrl: uploadedUrl })
           .where(eq(users.id, authUser.id))
           .returning({ id: users.id });
 
@@ -138,12 +133,12 @@ export async function signUpUser(formData: FormData) {
           throw new Error("Unable to save the profile picture.");
         }
       } catch (avatarError) {
-        if (uploadedAvatar) {
-          await deleteOrQueueManagedImage(
-            "avatars",
-            uploadedAvatar.objectName,
-            "failed_signup_avatar",
-          );
+        if (uploadedUrl) {
+          try {
+            await deleteAvatarFile(uploadedUrl);
+          } catch (cleanupError) {
+            console.error("Unable to clean up signup avatar:", cleanupError);
+          }
         }
 
         console.error("Signup avatar could not be saved:", avatarError);
@@ -201,15 +196,12 @@ export async function updateOwnAvatar(formData: FormData) {
       throw new Error("Your public user profile could not be found.");
     }
 
-    const newAvatar = await uploadAvatarFile(file, authenticatedUser.id);
+    const newAvatarUrl = await uploadAvatarFile(file, authenticatedUser.id);
 
     try {
       const [updatedUser] = await db
         .update(users)
-        .set({
-          avatarUrl: newAvatar.publicUrl,
-          avatarObjectName: newAvatar.objectName,
-        })
+        .set({ avatarUrl: newAvatarUrl })
         .where(eq(users.id, authenticatedUser.id))
         .returning();
 
@@ -217,14 +209,22 @@ export async function updateOwnAvatar(formData: FormData) {
         throw new Error("Your public user profile could not be found.");
       }
 
+      if (existingUser.avatarUrl) {
+        try {
+          await deleteAvatarFile(existingUser.avatarUrl);
+        } catch (cleanupError) {
+          console.error("Failed to delete the previous avatar:", cleanupError);
+        }
+      }
+
       revalidatePath("/profile");
       return updatedUser;
     } catch (error) {
-      await deleteOrQueueManagedImage(
-        "avatars",
-        newAvatar.objectName,
-        "failed_own_avatar_update",
-      );
+      try {
+        await deleteAvatarFile(newAvatarUrl);
+      } catch (cleanupError) {
+        console.error("Failed to clean up the new avatar:", cleanupError);
+      }
 
       throw error;
     }
@@ -248,12 +248,18 @@ export async function removeOwnAvatar() {
 
     const [updatedUser] = await db
       .update(users)
-      .set({ avatarUrl: null, avatarObjectName: null })
+      .set({ avatarUrl: null })
       .where(eq(users.id, authenticatedUser.id))
       .returning();
 
     if (!updatedUser) {
       throw new Error("Your public user profile could not be found.");
+    }
+
+    try {
+      await deleteAvatarFile(existingUser.avatarUrl);
+    } catch (cleanupError) {
+      console.error("Failed to delete the removed avatar:", cleanupError);
     }
 
     revalidatePath("/profile");
@@ -361,6 +367,10 @@ export async function deleteOwnAccount() {
       );
     }
 
+    const existingUser = await db.query.users.findFirst({
+      where: { id: authenticatedUser.id },
+    });
+
     const supabaseAdmin = createAdminClient();
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(
       authenticatedUser.id,
@@ -371,6 +381,14 @@ export async function deleteOwnAccount() {
     }
 
     await db.delete(users).where(eq(users.id, authenticatedUser.id));
+
+    if (existingUser?.avatarUrl) {
+      try {
+        await deleteAvatarFile(existingUser.avatarUrl);
+      } catch (cleanupError) {
+        console.error("Failed to delete account avatar:", cleanupError);
+      }
+    }
 
     return { id: authenticatedUser.id };
   });
