@@ -1,10 +1,12 @@
+// this page contains checks for if the user trying to access this page is logged in and an admin
+
 import { redirect } from "next/navigation";
 
 import { AdminNavbar } from "@/components/site-components/admin-components/admin-navbar";
 import {
-  getAdminForUserId,
   getAuthenticatedUser,
 } from "@/server/auth";
+import { getAdminByUserId } from "@/server/admins";
 
 export default async function AdminLayout({
   children,
@@ -17,7 +19,7 @@ export default async function AdminLayout({
     redirect("/auth/login?next=/admin");
   }
 
-  const admin = await getAdminForUserId(authenticatedUser.id);
+  const admin = await getAdminByUserId(authenticatedUser.id);
 
   if (!admin) {
     redirect("/");

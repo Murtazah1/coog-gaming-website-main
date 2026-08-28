@@ -21,7 +21,8 @@ export default function Page() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 You&apos;ve successfully signed up. Please check your email to
-                confirm your account before signing in.
+                confirm your account. The confirmation link will sign you in
+                and return you to the site.
               </p>
             </CardContent>
           </Card>

@@ -1,10 +1,7 @@
 import "server-only";
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { eq } from "drizzle-orm";
-
-import { db } from "@/db";
-import { admins, members } from "@/db/schema";
+import { getAdminByUserId } from "./admins";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthenticatedUser = {
@@ -14,14 +11,18 @@ export type AuthenticatedUser = {
 
 export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
   const supabase = await createClient();
+  // this line checks to see if the current signed in user is one that is in the supabase auth table
   const { data, error } = await supabase.auth.getClaims();
+  // .claims contains a json with info from the auth table, including things like email and role (which for most users is just authenicated)
+  
   const claims = data?.claims;
+// subject is specifically the uuid in the supabase table
   const subject = claims?.sub;
 
   if (error || !claims || typeof subject !== "string") {
     return null;
   }
-
+// returns the auth table id + email
   return {
     id: subject,
     email: typeof claims.email === "string" ? claims.email : null,
@@ -29,6 +30,7 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
 }
 
 export async function requireUser() {
+  // so this just checks if we are able to get the authenticated user that is requesting whatever action we put this function on
   const user = await getAuthenticatedUser();
 
   if (!user) {
@@ -38,23 +40,11 @@ export async function requireUser() {
   return user;
 }
 
-export async function getAdminForUserId(userId: string) {
-  const [admin] = await db
-    .select({
-      id: admins.id,
-      role: admins.role,
-    })
-    .from(admins)
-    .innerJoin(members, eq(admins.memberId, members.id))
-    .where(eq(members.userId, userId))
-    .limit(1);
 
-  return admin ?? null;
-}
 
 export async function requireAdmin() {
   const user = await requireUser();
-  const admin = await getAdminForUserId(user.id);
+  const admin = await getAdminByUserId(user.id);
 
   if (!admin) {
     throw new Error("You must be an admin to perform this action.");
@@ -62,6 +52,8 @@ export async function requireAdmin() {
 
   return user;
 }
+
+// this is a function to check the user's previous password before the decide to change it in a password change
 
 export async function verifyCurrentPassword(email: string, password: string) {
   const verifier = createSupabaseClient(

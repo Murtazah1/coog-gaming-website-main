@@ -16,6 +16,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+const MIN_PASSWORD_LENGTH = 8;
+
 export function SignUpForm({
   className,
   ...props
@@ -29,22 +31,29 @@ export function SignUpForm({
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
-    setIsLoading(true);
     setError(null);
+
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(
+        `Password must be at least 8 characters long`,
+      );
+      return;
+    }
 
     if (password !== repeatPassword) {
       setError("Passwords do not match");
-      setIsLoading(false);
       return;
     }
+
+    const supabase = createClient();
+    setIsLoading(true);
 
     try {
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
+          emailRedirectTo: window.location.origin,
         },
       });
       if (error) throw error;
@@ -85,6 +94,7 @@ export function SignUpForm({
                   id="password"
                   type="password"
                   required
+                  minLength={MIN_PASSWORD_LENGTH}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -97,6 +107,7 @@ export function SignUpForm({
                   id="repeat-password"
                   type="password"
                   required
+                  minLength={MIN_PASSWORD_LENGTH}
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
                 />

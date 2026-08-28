@@ -1,14 +1,13 @@
 import { db } from "@/db";
-import {
-  getAdminForUserId,
-  getAuthenticatedUser,
-} from "@/server/auth";
+import { getAuthenticatedUser } from "@/server/auth";
+import { getAdminByUserId } from "@/server/admins";
 import { getOwnMembership } from "@/server/members";
 
 import { NavbarClient } from "./navbar-client";
 
 export default async function Navbar() {
   const authenticatedUser = await getAuthenticatedUser();
+  // this gets all the user information as well as whatever tables they r in
   const [profile, membershipResult, admin] = authenticatedUser
     ? await Promise.all([
         db.query.users.findFirst({
@@ -20,7 +19,7 @@ export default async function Navbar() {
           },
         }),
         getOwnMembership(),
-        getAdminForUserId(authenticatedUser.id),
+        getAdminByUserId(authenticatedUser.id),
       ])
     : [null, null, null];
 

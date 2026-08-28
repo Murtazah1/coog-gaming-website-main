@@ -233,3 +233,18 @@ export async function deleteAdmin(id: string) {
     return deletedAdmin;
   });
 }
+
+
+export async function getAdminByUserId(userId: string) {
+  const [admin] = await db
+    .select({
+      id: admins.id,
+      role: admins.role,
+    })
+    .from(admins)
+    .innerJoin(members, eq(admins.memberId, members.id))
+    .where(eq(members.userId, userId))
+    .limit(1);
+
+  return admin ?? null;
+}

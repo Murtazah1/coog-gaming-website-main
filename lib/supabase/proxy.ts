@@ -4,9 +4,9 @@ import { hasEnvVars } from "../utils";
 
 export async function updateSession(request: NextRequest) {
   // Skip auth check during development
-  if (process.env.SKIP_AUTH === "true") {
-    return NextResponse.next({ request });
-  }
+  // if (process.env.SKIP_AUTH === "true") {
+  //   return NextResponse.next({ request });
+  // }
 
   let supabaseResponse = NextResponse.next({
     request,
@@ -57,7 +57,7 @@ export async function updateSession(request: NextRequest) {
   const isPublicPath = publicPaths.some(
     (path) => request.nextUrl.pathname === path,
   );
-
+  // if this is not in the public defined paths, then the user will need to login to access those
   if (!isPublicPath && !user && !request.nextUrl.pathname.startsWith("/auth")) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
