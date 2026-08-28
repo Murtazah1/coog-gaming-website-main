@@ -7,7 +7,9 @@ export const events = pgTable("events", {
   location: text("location").notNull(),
   startDate: timestamp("start_date", { withTimezone: true }).notNull(),
   endDate: timestamp("end_date", { withTimezone: true }).notNull(),
-  createdBy: uuid("created_by").notNull().references(() => admins.id),
+  createdBy: uuid("created_by").references(() => admins.id, {
+    onDelete: "set null",
+  }),
   description: text("description"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });

@@ -1,9 +1,12 @@
 "use server";
 
-// this file houses all the routes/ database actions for users table
-import { db } from "@/db/index";
-import { users, type User } from "@/db/schema/users";
+import { eq } from "drizzle-orm";
+import * as z from "zod";
+
+import { db } from "@/db";
+import { users } from "@/db/schema/users";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { uploadAvatarFile } from "@/lib/supabase/avatar-storage";
 import {
   userEmailSchema,
   userFirstNameSchema,
@@ -11,19 +14,11 @@ import {
   userLastNameSchema,
   userPasswordSchema,
 } from "@/lib/validation/users";
-import { eq } from "drizzle-orm";
+import { requireAdmin } from "./auth";
 import safeAction from "./safe-action";
-import * as z from "zod";
-import { deleteAvatar } from "./storage";
+import { deleteOrQueueManagedImage } from "./storage-cleanup";
 
-// just a type for making user updating easier
-type UpdateUserData = Partial<
-  Pick<User, "email" | "firstName" | "lastName" | "gamerName" | "avatarUrl">
->;
-
-// since users can technically call a server actions without using the user form I made we need to add zod validation in this file too
-
-const userIdSchema = z.uuid("Invalid member ID");
+const userIdSchema = z.uuid("Invalid user ID");
 
 const createUserSchema = z.object({
   email: userEmailSchema("Enter in a valid email address"),
@@ -33,35 +28,49 @@ const createUserSchema = z.object({
   gamerName: userGamerNameSchema("Gamer Name cannot be empty")
     .nullable()
     .optional(),
-  avatarUrl: z.url("Avatar URL must be valid").nullable(),
 });
 
-const updateUserSchema = z
-  .object({
-    email: userEmailSchema("Enter in a valid email address").optional(),
-    firstName: userFirstNameSchema("Give a first name").nullable().optional(),
-    lastName: userLastNameSchema("Give a last name").nullable().optional(),
-    gamerName: userGamerNameSchema("Gamer Name cannot be empty")
-      .nullable()
-      .optional(),
-    avatarUrl: z.url("Avatar URL must be valid").nullable().optional(),
-  })
-  .refine((data) => Object.keys(data).length > 0, {
-    message: "at least one field must be provided",
-  });
+const updateUserSchema = z.object({
+  email: userEmailSchema("Enter in a valid email address"),
+  firstName: userFirstNameSchema("Give a first name").nullable().optional(),
+  lastName: userLastNameSchema("Give a last name").nullable().optional(),
+  gamerName: userGamerNameSchema("Gamer Name cannot be empty")
+    .nullable()
+    .optional(),
+  removeAvatar: z.boolean(),
+});
 
-// and lets make a type for user creation + updating
+function getOptionalAvatar(formData: FormData) {
+  const value = formData.get("avatar");
+  return value instanceof File && value.size > 0 ? value : null;
+}
 
-type CreateUserInput = {
-  email: string;
-  password: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  gamerName?: string | null;
-  avatarUrl: string | null;
-};
+function parseCreateUserForm(formData: FormData) {
+  return {
+    data: createUserSchema.parse({
+      email: formData.get("email"),
+      password: formData.get("password"),
+      firstName: formData.get("firstName"),
+      lastName: formData.get("lastName"),
+      gamerName: formData.get("gamerName") || null,
+    }),
+    avatar: getOptionalAvatar(formData),
+  };
+}
 
-// get users by email, this one is for the search implementation that we will do later
+function parseUpdateUserForm(formData: FormData) {
+  return {
+    data: updateUserSchema.parse({
+      email: formData.get("email"),
+      firstName: formData.get("firstName"),
+      lastName: formData.get("lastName"),
+      gamerName: formData.get("gamerName") || null,
+      removeAvatar: formData.get("removeAvatar") === "true",
+    }),
+    avatar: getOptionalAvatar(formData),
+  };
+}
+
 export async function getUsers(search?: string) {
   const cleanSearch = search?.trim();
 
@@ -70,87 +79,47 @@ export async function getUsers(search?: string) {
       where: cleanSearch
         ? {
             OR: [
-              {
-                email: {
-                  ilike: `%${cleanSearch}%`,
-                },
-              },
-              {
-                firstName: {
-                  ilike: `%${cleanSearch}%`,
-                },
-              },
-              {
-                lastName: {
-                  ilike: `%${cleanSearch}%`,
-                },
-              },
-              {
-                gamerName: {
-                  ilike: `%${cleanSearch}%`,
-                },
-              },
+              { email: { ilike: `%${cleanSearch}%` } },
+              { firstName: { ilike: `%${cleanSearch}%` } },
+              { lastName: { ilike: `%${cleanSearch}%` } },
+              { gamerName: { ilike: `%${cleanSearch}%` } },
             ],
           }
         : undefined,
-
       orderBy: (table, { desc }) => [desc(table.createdAt)],
     }),
   );
 }
 
-// getting the user by ID, useful function to have
 export async function getUserById(id: string) {
   return safeAction(async () => {
     const userId = userIdSchema.parse(id);
-    const user = await db.query.users.findFirst({
-      where: {
-        id: userId,
-      },
-    });
+    const user = await db.query.users.findFirst({ where: { id: userId } });
     return user ?? null;
   });
 }
 
-// finding a user by email
 export async function getUserByEmail(email: string) {
-  // we lower case the email as emails are case insensitive
   return safeAction(async () => {
     const cleanEmail = email.trim().toLowerCase();
     const user = await db.query.users.findFirst({
-      where: {
-        email: cleanEmail,
-      },
+      where: { email: cleanEmail },
     });
-
     return user ?? null;
   });
 }
-// this is a function for creating users, takes in an object that defines user fields
-export async function createUser(data: CreateUserInput) {
+
+export async function createUser(formData: FormData) {
   return safeAction(async () => {
-    // make sure to validate the user info beforehand
-    const validation = createUserSchema.safeParse(data);
+    await requireAdmin();
 
-    // and if our validation fails we need to throw an error that our save action can handle
-    if (!validation.success) {
-      throw new Error(
-        validation.error.issues[0]?.message ?? "Invalid User Info",
-      );
-    }
-
-    const validatedData = validation.data;
-    const email = validatedData.email.toLowerCase();
-
-    // connect to the admin client as we are making a user
+    const { data, avatar } = parseCreateUserForm(formData);
+    const email = data.email.toLowerCase();
     const supabaseAuth = createAdminClient();
     const { data: authData, error: authError } =
-      // we enter in email + password first as for some reason the way supabase makes it work
-      // is that u enter in those fields first, it gets sent to a special auth table
-      // and from the auth table it gets added to the users table, as no passwords are stored in the user table
       await supabaseAuth.auth.admin.createUser({
-        email: email,
-        password: validatedData.password,
+        email,
+        password: data.password,
         email_confirm: true,
       });
 
@@ -158,138 +127,127 @@ export async function createUser(data: CreateUserInput) {
       throw new Error(authError?.message || "Failed to create auth user");
     }
 
+    let uploadedAvatar:
+      | Awaited<ReturnType<typeof uploadAvatarFile>>
+      | null = null;
+
     try {
-      const [updatedUser] = await db
+      if (avatar) {
+        uploadedAvatar = await uploadAvatarFile(avatar, authData.user.id);
+      }
+
+      const [createdUser] = await db
         .update(users)
         .set({
-          firstName: validatedData.firstName,
-          lastName: validatedData.lastName,
-          gamerName: validatedData.gamerName?.trim() || null,
-          avatarUrl: validatedData.avatarUrl,
+          email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          gamerName: data.gamerName?.trim() || null,
+          avatarUrl: uploadedAvatar?.publicUrl ?? null,
+          avatarObjectName: uploadedAvatar?.objectName ?? null,
         })
         .where(eq(users.id, authData.user.id))
-        .returning(); // returning is nice as it just returns the rows that were changed as an array, which in this case is an array of 1 element
+        .returning();
 
-      if (!updatedUser) {
+      if (!createdUser) {
         throw new Error(
-          "Auth account was created, but was not made into public user",
+          "Auth account was created, but was not made into a public user",
         );
       }
 
-      return updatedUser ?? null;
+      return createdUser;
     } catch (error) {
-      // for this part of the code we cleanup partially created user if the error is thrown
-      // and this cleanup involves us deleting the user from the auth table
-      const { error: cleanupError } = await supabaseAuth.auth.admin.deleteUser(
-        authData.user.id,
-      );
+      if (uploadedAvatar) {
+        await deleteOrQueueManagedImage(
+          "avatars",
+          uploadedAvatar.objectName,
+          "failed_admin_user_create",
+        );
+      }
+
+      const { error: cleanupError } =
+        await supabaseAuth.auth.admin.deleteUser(authData.user.id);
 
       if (cleanupError) {
         console.error(
-          "Failed to cleanup the partially created user: ",
+          "Failed to clean up the partially created user:",
           cleanupError.message,
         );
       }
 
       throw error;
     }
-    // after we insert the users we now need to update it with the name and avatar
   });
 }
 
-// function for updating user
-export async function updateUser(id: string, data: UpdateUserData) {
+export async function updateUser(id: string, formData: FormData) {
   return safeAction(async () => {
-    // added in zod validation for this
-    const validRes = updateUserSchema.safeParse(data);
-    if (!validRes.success) {
-      throw new Error(
-        validRes.error.issues[0]?.message ??
-          "Invalid Information for user update",
-      );
-    }
+    await requireAdmin();
 
-    const validData = validRes.data;
-
-    // validate if the user exists
-
+    const userId = userIdSchema.parse(id);
+    const { data, avatar } = parseUpdateUserForm(formData);
     const existingUser = await db.query.users.findFirst({
-      where: {
-        id,
-      },
+      where: { id: userId },
     });
 
     if (!existingUser) {
       throw new Error("User not found");
     }
-    const email = validData.email?.toLowerCase();
 
-    const emailChanged = email !== undefined && email !== existingUser.email;
-
-    const avatarChanged =
-      validData.avatarUrl !== undefined &&
-      validData.avatarUrl !== existingUser.avatarUrl;
-
-    const supabaseAuth = emailChanged ? createAdminClient() : null;
-    // If the email is being changed, update it in Supabase Auth as well.
-    if (emailChanged && supabaseAuth) {
-      const { error } = await supabaseAuth.auth.admin.updateUserById(id, {
-        email: email,
-      });
-      if (error) {
-        console.warn("Failed to get user from db: ", error.message);
-      }
-    }
-
-    // now we build an object containing only the fields provided in data
-    const databaseUpdateData: UpdateUserData = {};
-
-    if (email !== undefined) {
-      databaseUpdateData.email = email;
-    }
-
-    if (validData.firstName !== undefined) {
-      databaseUpdateData.firstName = validData.firstName;
-    }
-
-    if (validData.lastName !== undefined) {
-      databaseUpdateData.lastName = validData.lastName;
-    }
-
-    if (validData.gamerName !== undefined) {
-      databaseUpdateData.gamerName = validData.gamerName?.trim() || null;
-    }
-
-    if (validData.avatarUrl !== undefined) {
-      databaseUpdateData.avatarUrl = validData.avatarUrl;
-    }
+    const email = data.email.toLowerCase();
+    const emailChanged = email !== existingUser.email;
+    const supabaseAuth = createAdminClient();
+    const uploadedAvatar = avatar
+      ? await uploadAvatarFile(avatar, existingUser.id)
+      : null;
 
     try {
+      if (emailChanged) {
+        const { error } = await supabaseAuth.auth.admin.updateUserById(userId, {
+          email,
+        });
+
+        if (error) {
+          throw new Error(error.message);
+        }
+      }
+
       const [updatedUser] = await db
         .update(users)
-        .set(databaseUpdateData)
-        .where(eq(users.id, id))
+        .set({
+          email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          gamerName: data.gamerName?.trim() || null,
+          ...(uploadedAvatar
+            ? {
+                avatarUrl: uploadedAvatar.publicUrl,
+                avatarObjectName: uploadedAvatar.objectName,
+              }
+            : data.removeAvatar
+              ? { avatarUrl: null, avatarObjectName: null }
+              : {}),
+        })
+        .where(eq(users.id, userId))
         .returning();
 
       if (!updatedUser) {
         throw new Error("User not found");
       }
 
-      if (avatarChanged && existingUser.avatarUrl) {
-        const { error } = await deleteAvatar(existingUser.avatarUrl);
-
-        if (error) {
-          console.error("Failed to delete old avatar:", error);
-        }
-      }
-
       return updatedUser;
     } catch (error) {
-      // if the update failed we need to roll back the email change as that was updated in the auth table
+      if (uploadedAvatar) {
+        await deleteOrQueueManagedImage(
+          "avatars",
+          uploadedAvatar.objectName,
+          "failed_admin_user_update",
+        );
+      }
 
-      if (supabaseAuth && emailChanged) {
+      if (emailChanged) {
         const { error: rollbackError } =
-          await supabaseAuth.auth.admin.updateUserById(id, {
+          await supabaseAuth.auth.admin.updateUserById(userId, {
             email: existingUser.email,
           });
 
@@ -306,36 +264,29 @@ export async function updateUser(id: string, data: UpdateUserData) {
   });
 }
 
-// function to delete the user
 export async function deleteUser(id: string) {
   return safeAction(async () => {
-    const supabaseAuth = createAdminClient();
-    const user = await db.query.users.findFirst({
-      where: {
-        id,
-      },
+    await requireAdmin();
+
+    const userId = userIdSchema.parse(id);
+    const existingUser = await db.query.users.findFirst({
+      where: { id: userId },
+      columns: { id: true },
     });
-    if (!user) {
+
+    if (!existingUser) {
       throw new Error("User not found");
     }
 
-    // Delete the user's authentication account.
-    const { error: authError } = await supabaseAuth.auth.admin.deleteUser(id);
-    // delete the user from the db
-    await db.delete(users).where(eq(users.id, id));
+    const supabaseAuth = createAdminClient();
+    const { error: authError } =
+      await supabaseAuth.auth.admin.deleteUser(userId);
+
     if (authError) {
       throw new Error(authError.message);
     }
 
-    // if the user had an avatar, remove it from storage
-    if (user.avatarUrl) {
-      const { error: avatarError } = await deleteAvatar(user.avatarUrl);
-
-      if (avatarError) {
-        console.error("Failed to delete user avatar:", avatarError);
-      }
-    }
-
-    return { id };
+    await db.delete(users).where(eq(users.id, userId));
+    return { id: userId };
   });
 }

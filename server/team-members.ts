@@ -5,6 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { teamMembers } from "@/db/schema";
 import safeAction from "./safe-action";
+import { requireAdmin } from "./auth";
 
 const teamMemberSchema = z.object({
   teamId: z.uuid("Invalid team ID"),
@@ -15,6 +16,8 @@ type TeamMemberInput = z.infer<typeof teamMemberSchema>;
 
 export async function addTeamMember(input: TeamMemberInput) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const cleanInput = teamMemberSchema.parse(input);
 
     // Make sure the team exists.
@@ -77,6 +80,8 @@ export async function addTeamMember(input: TeamMemberInput) {
 
 export async function removeTeamMember(input: TeamMemberInput) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const cleanInput = teamMemberSchema.parse(input);
 
     const [deletedMembership] = await db

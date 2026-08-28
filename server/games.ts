@@ -2,20 +2,30 @@
 
 import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
+
 import { db } from "@/db";
 import { games } from "@/db/schema/games";
+import { uploadManagedImage } from "@/lib/supabase/image-storage";
+import { requireAdmin } from "./auth";
 import safeAction from "./safe-action";
-import { deleteGameImage } from "./storage";
+import { deleteOrQueueManagedImage } from "./storage-cleanup";
 
-const createGameSchema = z.object({
+const gameFormSchema = z.object({
   name: z.string().trim().min(1, "Game name is required"),
-  imageUrl: z.url().nullable().optional(),
+  removeImage: z.boolean(),
 });
 
-const updateGameSchema = createGameSchema.partial();
+function parseGameForm(formData: FormData) {
+  const input = gameFormSchema.parse({
+    name: formData.get("name"),
+    removeImage: formData.get("removeImage") === "true",
+  });
+  const fileValue = formData.get("image");
+  const image =
+    fileValue instanceof File && fileValue.size > 0 ? fileValue : null;
 
-export type CreateGameInput = z.infer<typeof createGameSchema>;
-export type UpdateGameInput = z.infer<typeof updateGameSchema>;
+  return { ...input, image };
+}
 
 export async function getGames() {
   return safeAction(async () => {
@@ -23,97 +33,113 @@ export async function getGames() {
   });
 }
 
-export async function createGame(input: CreateGameInput) {
+export async function createGame(formData: FormData) {
   return safeAction(async () => {
-    const data = createGameSchema.parse(input);
+    await requireAdmin();
 
-    const [createdGame] = await db
-      .insert(games)
-      .values({
-        name: data.name,
-        imageUrl: data.imageUrl ?? null,
-      })
-      .returning();
+    const data = parseGameForm(formData);
+    const gameId = crypto.randomUUID();
+    const uploadedImage = data.image
+      ? await uploadManagedImage("game-images", gameId, data.image, "Game image")
+      : null;
 
-    return createdGame;
+    try {
+      const [createdGame] = await db
+        .insert(games)
+        .values({
+          id: gameId,
+          name: data.name,
+          imageUrl: uploadedImage?.publicUrl ?? null,
+          imageObjectName: uploadedImage?.objectName ?? null,
+        })
+        .returning();
+
+      if (!createdGame) {
+        throw new Error("Failed to create game");
+      }
+
+      return createdGame;
+    } catch (error) {
+      if (uploadedImage) {
+        await deleteOrQueueManagedImage(
+          "game-images",
+          uploadedImage.objectName,
+          "failed_game_create",
+        );
+      }
+
+      throw error;
+    }
   });
 }
 
-export async function updateGame(id: string, input: UpdateGameInput) {
+export async function updateGame(id: string, formData: FormData) {
   return safeAction(async () => {
-    const gameId = z.uuid().parse(id);
-    const data = updateGameSchema.parse(input);
+    await requireAdmin();
 
-     // Get the game BEFORE updating it.
-    const oldGame = await db.query.games.findFirst({
-      where: {
-        id: gameId,
-      },
-    });
+    const gameId = z.uuid().parse(id);
+    const data = parseGameForm(formData);
+    const oldGame = await db.query.games.findFirst({ where: { id: gameId } });
 
     if (!oldGame) {
       throw new Error("Game not found");
     }
 
-    const [updatedGame] = await db
-      .update(games)
-      .set(data)
-      .where(eq(games.id, gameId))
-      .returning();
+    const uploadedImage = data.image
+      ? await uploadManagedImage("game-images", gameId, data.image, "Game image")
+      : null;
 
-    if (!updatedGame) {
-      throw new Error("Game not found");
-    }
+    try {
+      const [updatedGame] = await db
+        .update(games)
+        .set({
+          name: data.name,
+          ...(uploadedImage
+            ? {
+                imageUrl: uploadedImage.publicUrl,
+                imageObjectName: uploadedImage.objectName,
+              }
+            : data.removeImage
+              ? { imageUrl: null, imageObjectName: null }
+              : {}),
+        })
+        .where(eq(games.id, gameId))
+        .returning();
 
-     // If the image changed, delete the old image.
-    if (
-      oldGame.imageUrl &&
-      oldGame.imageUrl !== updatedGame.imageUrl
-    ) {
-      const { error } = await deleteGameImage(
-        oldGame.imageUrl,
-      );
+      if (!updatedGame) {
+        throw new Error("Game not found");
+      }
 
-      if (error) {
-        console.error(
-          "Failed to delete old game image:",
-          error,
+      return updatedGame;
+    } catch (error) {
+      if (uploadedImage) {
+        await deleteOrQueueManagedImage(
+          "game-images",
+          uploadedImage.objectName,
+          "failed_game_update",
         );
       }
-    }
 
-    return updatedGame;
+      throw error;
+    }
   });
 }
 
 export async function deleteGame(id: string) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const gameId = z.uuid().parse(id);
-
-    const game = await db.query.games.findFirst({
-      where: {
-        id: gameId,
-      },
-    });
-
-    if (!game) {
-      throw new Error("Game not found");
-    }
-
     const [deletedGame] = await db
       .delete(games)
       .where(eq(games.id, gameId))
-      .returning();
+      .returning({ id: games.id });
 
     if (!deletedGame) {
-      throw new Error("Failed to delete game");
+      throw new Error("Game not found");
     }
 
-    if (game.imageUrl) {
-      await deleteGameImage(game.imageUrl);
-    }
-
-    return deleteGame;
+    return deletedGame;
   });
 }
 

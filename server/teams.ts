@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { teams } from "@/db/schema";
 import safeAction from "./safe-action";
 import { eq } from "drizzle-orm";
+import { requireAdmin } from "./auth";
 
 const teamIdSchema = z.uuid("Invalid team ID");
 const gameIdSchema = z.uuid("Invalid game ID");
@@ -67,6 +68,8 @@ export async function getTeamsWithMembersByGameID(gameId: string) {
 
 export async function createTeam(input: CreateTeamInput) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const cleanInput = createTeamSchema.parse(input);
 
     // Relational read -> new object syntax.
@@ -103,6 +106,8 @@ export async function createTeam(input: CreateTeamInput) {
 
 export async function updateTeam(id: string, input: UpdateTeamInput) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const teamId = teamIdSchema.parse(id);
     const cleanInput = updateTeamSchema.parse(input);
 
@@ -122,6 +127,8 @@ export async function updateTeam(id: string, input: UpdateTeamInput) {
 
 export async function deleteTeam(id: string) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const teamId = teamIdSchema.parse(id);
 
     const [deletedTeam] = await db

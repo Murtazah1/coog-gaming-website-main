@@ -36,6 +36,18 @@ drop policy if exists "Admins can insert game image objects" on storage.objects;
 drop policy if exists "Admins can update game image objects" on storage.objects;
 drop policy if exists "Admins can delete game image objects" on storage.objects;
 
+-- Remove the original dashboard/CLI policies superseded by this exact policy
+-- set. The restrictive guards below would contain them, but dropping them
+-- avoids retaining redundant permissive paths and stale authorization SQL.
+drop policy if exists "Anyone can view avatars" on storage.objects;
+drop policy if exists "Anyone can view game images" on storage.objects;
+drop policy if exists "Users can upload own avatar" on storage.objects;
+drop policy if exists "Users can update own avatar" on storage.objects;
+drop policy if exists "Users can delete own avatar" on storage.objects;
+drop policy if exists "Admins can upload game images" on storage.objects;
+drop policy if exists "Admins can update game images" on storage.objects;
+drop policy if exists "Admins can delete game images" on storage.objects;
+
 -- Restrictive policies prevent any broader legacy policy from widening access
 -- to these two buckets. They evaluate to true for unrelated buckets so their
 -- existing policies continue to work unchanged.

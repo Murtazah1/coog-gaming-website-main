@@ -5,6 +5,7 @@ import { events } from "@/db/schema/events";
 import { eq } from "drizzle-orm";
 import * as z from "zod";
 import safeAction from "./safe-action";
+import { requireAdmin } from "./auth";
 
 const eventSchema = z
   .object({
@@ -30,6 +31,8 @@ export async function getEvents() {
 
 export async function createEvent(data: z.infer<typeof eventSchema>) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const result = eventSchema.safeParse(data);
 
     if (!result.success) {
@@ -47,6 +50,8 @@ export async function updateEvent(
   data: z.infer<typeof eventSchema>,
 ) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const result = eventSchema.safeParse(data);
 
     if (!result.success) {
@@ -69,6 +74,8 @@ export async function updateEvent(
 
 export async function deleteEvent(id: string) {
   return safeAction(async () => {
+    await requireAdmin();
+
     const [deletedEvent] = await db
       .delete(events)
       .where(eq(events.id, id))
