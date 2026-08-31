@@ -14,7 +14,7 @@ const eventSchema = z
     startDate: z.date(),
     endDate: z.date(),
     description: z.string().trim().nullable().optional(),
-    createdBy: z.uuid("Please select an admin"),
+    
   })
   .refine((data) => data.endDate > data.startDate, {
     message: "End time must be after start time",
@@ -31,7 +31,7 @@ export async function getEvents() {
 
 export async function createEvent(data: z.infer<typeof eventSchema>) {
   return safeAction(async () => {
-    await requireAdmin();
+    const admin = await requireAdmin();
 
     const result = eventSchema.safeParse(data);
 
@@ -39,7 +39,7 @@ export async function createEvent(data: z.infer<typeof eventSchema>) {
       throw new Error(result.error.issues[0]?.message ?? "Invalid event");
     }
 
-    const [event] = await db.insert(events).values(result.data).returning();
+    const [event] = await db.insert(events).values({...result.data, createdBy: admin.id}).returning();
 
     return event;
   });

@@ -28,6 +28,7 @@ import {
 import type { Event } from "@/db/schema/events";
 
 import { createEvent, updateEvent } from "@/server/events";
+import { requireAdmin } from "@/server/auth";
 
 // ==========================================
 // FORM SCHEMA
@@ -40,8 +41,7 @@ const eventFormSchema = z
     description: z.string().trim().optional(),
     startDate: z.string().min(1, "Start date is required"),
     endDate: z.string().min(1, "End date is required"),
-    // temporary while authentication is not hooked up
-    createdBy: z.string().uuid("Select an admin"),
+    
   })
   .refine((data) => new Date(data.endDate) > new Date(data.startDate), {
     message: "End date must be after start date",
@@ -58,11 +58,6 @@ type EventFormValues = z.infer<typeof eventFormSchema>;
 // You can change this to your existing admin type
 // if you already have one that includes these fields.
 
-export interface EventAdminOption {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
-}
 
 // ==========================================
 // PROPS
@@ -72,7 +67,7 @@ interface CreateProps {
   mode: "create";
   event?: never;
   initialDate: Dayjs;
-  admins: EventAdminOption[];
+  
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -81,7 +76,7 @@ interface EditProps {
   mode: "edit";
   event: Event;
   initialDate?: never;
-  admins: EventAdminOption[];
+  
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -110,10 +105,11 @@ export default function EventForm({
   mode,
   event,
   initialDate,
-  admins,
+  
   onSuccess,
   onCancel,
 }: EventFormProps) {
+
   // lets us easily check whether
   // we are creating or editing
   const isCreate = mode === "create";
@@ -161,7 +157,6 @@ export default function EventForm({
 
       endDate: toDateTimeLocal(defaultEndDate),
 
-      createdBy: event?.createdBy ?? "",
     },
   });
 
@@ -189,7 +184,7 @@ export default function EventForm({
 
       endDate: new Date(values.endDate),
 
-      createdBy: values.createdBy,
+      
     };
 
     /*
@@ -308,43 +303,7 @@ export default function EventForm({
           )}
         />
 
-        {/* ================================= */}
-        {/* CREATED BY */}
-        {/* ================================= */}
-
-        <FormField
-          control={form.control}
-          name="createdBy"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Created By</FormLabel>
-
-              <Select value={field.value} onValueChange={field.onChange}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder={"Select admin"} />
-                  </SelectTrigger>
-                </FormControl>
-
-                <SelectContent>
-                  {admins.map((admin) => {
-                    const name = [admin.firstName, admin.lastName]
-                      .filter(Boolean)
-                      .join(" ");
-
-                    return (
-                      <SelectItem key={admin.id} value={admin.id}>
-                        {name || admin.id}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      
 
         {/* ================================= */}
         {/* DESCRIPTION */}

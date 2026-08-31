@@ -50,7 +50,7 @@ export async function requireAdmin() {
     throw new Error("You must be an admin to perform this action.");
   }
 
-  return user;
+  return admin;
 }
 
 // this is a function to check the user's previous password before the decide to change it in a password change
